@@ -1,0 +1,36 @@
+
+erDiagram
+    ALUNO ||--o{ TREINO : possui
+    INSTRUTOR ||--o{ TREINO : orienta
+    ALUNO ||--o{ FREQUENCIA : registra
+
+    ALUNO {
+        int id_aluno PK "NOT NULL"
+        varchar2 nome "NOT NULL"
+        varchar2 email "NOT NULL"
+        varchar2 telefone "NOT NULL"
+        date data_nascimento "NOT NULL"
+        varchar2 genero "NOT NULL"
+    }
+
+    INSTRUTOR {
+        int id_instrutor PK "NOT NULL"
+        varchar2 nome"NOT NULL"
+        varchar2 email "NOT NULL"
+        varchar2 telefone "NOT NULL"
+    }
+
+    TREINO {
+        int id_treino PK 
+        int id_aluno FK
+        int id_instrutor FK
+        varchar2 nome "NOT NULL"
+        varchar2 objetivo 
+        datetime data_criacao "NOT NULL"
+    }
+
+    FREQUENCIA {
+        int id_frequencia PK
+        int id_aluno FK
+        datetime data_hora_entrada "NOT NULL"
+    }
