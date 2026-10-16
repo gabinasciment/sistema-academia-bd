@@ -1,4 +1,6 @@
-
+---
+id: 2b179050-cd0c-4a7d-a6ca-17071eb3fb87
+---
 erDiagram
     ALUNO ||--o{ TREINO : possui
     INSTRUTOR ||--o{ TREINO : orienta
@@ -6,31 +8,31 @@ erDiagram
 
     ALUNO {
         int id_aluno PK "NOT NULL"
-        varchar2 nome "NOT NULL"
-        varchar2 email "NOT NULL"
-        varchar2 telefone "NOT NULL"
+        varchar2(100) nome_aluno "NOT NULL"
+        varchar2(64) email_aluno "NOT NULL"
+        varchar2(20) telefone_aluno "NOT NULL"
         date data_nascimento "NOT NULL"
-        varchar2 genero "NOT NULL"
+        varchar2(10) genero "NOT NULL" 
     }
 
     INSTRUTOR {
         int id_instrutor PK "NOT NULL"
-        varchar2 nome"NOT NULL"
-        varchar2 email "NOT NULL"
-        varchar2 telefone "NOT NULL"
+        varchar2(100) nome_instrutor "NOT NULL"
+        varchar2(64) email_instrutor "NOT NULL"
+        varchar2(20) telefone_instrutor "NOT NULL"
     }
 
     TREINO {
         int id_treino PK 
         int id_aluno FK
         int id_instrutor FK
-        varchar2 nome "NOT NULL"
-        varchar2 objetivo 
-        datetime data_criacao "NOT NULL"
+        varchar2(100) nome_treino "NOT NULL"
+        varchar2(200) objetivo
+        date data_criacao "NOT NULL"
     }
 
     FREQUENCIA {
         int id_frequencia PK
         int id_aluno FK
-        datetime data_hora_entrada "NOT NULL"
+        date data_hora_entrada "NOT NULL"
     }
