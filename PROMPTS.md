@@ -47,3 +47,11 @@ A partir desse conteúdo, aponte o que está correto e com uma boa linha de raci
 Fonte : ChatGPT
 
 Com a resposta do prompt foi possível perceber alguns erros no tipo do time escolhido para alguns atributos como telefone e algumas convenções na escrita de atributos. Após a análise, foi feita a correção do levantamento e seguiu para a parte do diagrama.
+
+## Prompt 2 — Criação do banco de dados (Esther)
+
+"A partir do diagrama relacional do grupo (ALUNO, INSTRUTOR, TREINO e FREQUENCIA) e das regras do edital, me ajude a entender e montar o script de criação das tabelas no Oracle (PK, FK, NOT NULL, UNIQUE e sequences), os dados de exemplo para testes e o script Python que executa esses arquivos, seguindo a estrutura do projeto de exemplo do professor."
+
+Fonte : Claude Code (Anthropic)
+
+Usei a ferramenta como apoio para estudar os conceitos (chaves, restrições e sequences) e para gerar uma primeira versão dos scripts a partir do diagrama do grupo. Revisei e entendi cada comando, mantive o padrão de nomes do projeto de exemplo, deixei as FKs sem ON DELETE CASCADE para atender ao item 6.c.5.i e testei no Oracle a criação das tabelas, os dados de exemplo e as restrições (FK, UNIQUE e NOT NULL).
