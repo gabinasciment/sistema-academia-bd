@@ -1,118 +1,153 @@
-from datetime import date, datetime
+from datetime import datetime
 
 from conexion.oracle_queries import OracleQueries
 
 
 class ControllerFrequencia:
     """CRUD da tabela FREQUENCIA.
-    Colunas assumidas: ID_FREQUENCIA, ID_ALUNO, ID_TREINO,
-    DATA_FREQUENCIA, PRESENTE ('S' ou 'N').
-    Sequence assumida: FREQUENCIA_ID_FREQUENCIA_SEQ.
+
+    Colunas: ID_FREQUENCIA, ID_ALUNO, DATA_HORA_ENTRADA.
+    Sequence assumida: FREQUENCIA_ID_FREQUENCIA_SEQ (confira o nome no banco).
     """
 
     @staticmethod
-    def _escrever(sql, params):
-        """Executa INSERT/UPDATE/DELETE e retorna as linhas afetadas."""
-        oracle = OracleQueries(can_write=True)
-        try:
-            oracle.connect()
-            return oracle.write(sql, params)
-        finally:
-            oracle.close()
+    def _converter_data_hora(valor):
+        """Valida 'AAAA-MM-DD HH:MM[:SS]' e devolve 'AAAA-MM-DD HH:MM:SS'."""
+        for formato in ("%Y-%m-%d %H:%M:%S", "%Y-%m-%d %H:%M"):
+            try:
+                return datetime.strptime(valor, formato).strftime(
+                    "%Y-%m-%d %H:%M:%S"
+                )
+            except ValueError:
+                continue
+        raise ValueError(
+            "Data/hora inválida. Use o formato AAAA-MM-DD HH:MM:SS."
+        )
 
-    @staticmethod
-    def _consultar(sql, params=None):
-        """Executa SELECT e retorna a lista de linhas."""
-        oracle = OracleQueries()
+    def registrar_entrada(self, id_aluno, data_hora_entrada=None) -> bool:
+        """Registra a entrada do aluno. Sem data/hora, usa o momento atual."""
+        oracle = OracleQueries(can_write=True)
+
         try:
             cursor = oracle.connect()
-            cursor.execute(sql, params or {})
-            return cursor.fetchall()
+
+            if data_hora_entrada:
+                data_hora = self._converter_data_hora(data_hora_entrada)
+                valor_data = f"TO_DATE('{data_hora}', 'YYYY-MM-DD HH24:MI:SS')"
+            else:
+                valor_data = "SYSDATE"
+
+            query = f"""
+                INSERT INTO FREQUENCIA (
+                    ID_FREQUENCIA,
+                    ID_ALUNO,
+                    DATA_HORA_ENTRADA
+                )
+                VALUES (
+                    FREQUENCIA_ID_FREQUENCIA_SEQ.NEXTVAL,
+                    {int(id_aluno)},
+                    {valor_data}
+                )
+            """
+
+            oracle.write(query)
+            return cursor.rowcount > 0
+
         finally:
             oracle.close()
 
-    @staticmethod
-    def _converter_data(data):
-        """Aceita AAAA-MM-DD; se vazio, usa a data de hoje."""
-        if not data:
-            return date.today()
+    def atualizar(self, id_frequencia, id_aluno, data_hora_entrada) -> bool:
+        oracle = OracleQueries(can_write=True)
+
         try:
-            return datetime.strptime(data, "%Y-%m-%d").date()
-        except ValueError:
-            raise ValueError("Data inválida. Use o formato AAAA-MM-DD.")
+            cursor = oracle.connect()
 
-    def registrar(self, id_aluno, id_treino, data_frequencia=None,
-                  presente=True) -> bool:
-        sql = """
-            INSERT INTO FREQUENCIA (
-                ID_FREQUENCIA, ID_ALUNO, ID_TREINO,
-                DATA_FREQUENCIA, PRESENTE
-            )
-            VALUES (
-                FREQUENCIA_ID_FREQUENCIA_SEQ.NEXTVAL, :id_aluno, :id_treino,
-                :data_frequencia, :presente
-            )
-        """
-        params = {
-            "id_aluno": int(id_aluno),
-            "id_treino": int(id_treino),
-            "data_frequencia": self._converter_data(data_frequencia),
-            "presente": "S" if presente else "N",
-        }
-        return self._escrever(sql, params) > 0
+            data_hora = self._converter_data_hora(data_hora_entrada)
 
-    def atualizar(self, id_frequencia, id_aluno, id_treino,
-                  data_frequencia, presente) -> bool:
-        sql = """
-            UPDATE FREQUENCIA
-            SET ID_ALUNO = :id_aluno,
-                ID_TREINO = :id_treino,
-                DATA_FREQUENCIA = :data_frequencia,
-                PRESENTE = :presente
-            WHERE ID_FREQUENCIA = :id_frequencia
-        """
-        params = {
-            "id_aluno": int(id_aluno),
-            "id_treino": int(id_treino),
-            "data_frequencia": self._converter_data(data_frequencia),
-            "presente": "S" if presente else "N",
-            "id_frequencia": int(id_frequencia),
-        }
-        return self._escrever(sql, params) > 0
+            query = f"""
+                UPDATE FREQUENCIA
+                SET
+                    ID_ALUNO = {int(id_aluno)},
+                    DATA_HORA_ENTRADA =
+                        TO_DATE('{data_hora}', 'YYYY-MM-DD HH24:MI:SS')
+                WHERE ID_FREQUENCIA = {int(id_frequencia)}
+            """
+
+            oracle.write(query)
+            return cursor.rowcount > 0
+
+        finally:
+            oracle.close()
 
     def deletar(self, id_frequencia) -> bool:
-        sql = "DELETE FROM FREQUENCIA WHERE ID_FREQUENCIA = :id_frequencia"
-        params = {"id_frequencia": int(id_frequencia)}
-        return self._escrever(sql, params) > 0
+        oracle = OracleQueries(can_write=True)
+
+        try:
+            cursor = oracle.connect()
+
+            query = f"""
+                DELETE FROM FREQUENCIA
+                WHERE ID_FREQUENCIA = {int(id_frequencia)}
+            """
+
+            oracle.write(query)
+            return cursor.rowcount > 0
+
+        finally:
+            oracle.close()
 
     def buscar_por_id(self, id_frequencia):
-        sql = """
-            SELECT ID_FREQUENCIA, ID_ALUNO, ID_TREINO,
-                   DATA_FREQUENCIA, PRESENTE
-            FROM FREQUENCIA
-            WHERE ID_FREQUENCIA = :id_frequencia
-        """
-        linhas = self._consultar(sql, {"id_frequencia": int(id_frequencia)})
-        return linhas[0] if linhas else None
+        oracle = OracleQueries()
+
+        try:
+            cursor = oracle.connect()
+
+            query = f"""
+                SELECT ID_FREQUENCIA, ID_ALUNO, DATA_HORA_ENTRADA
+                FROM FREQUENCIA
+                WHERE ID_FREQUENCIA = {int(id_frequencia)}
+            """
+
+            cursor.execute(query)
+            return cursor.fetchone()
+
+        finally:
+            oracle.close()
 
     def listar(self):
-        sql = """
-            SELECT F.ID_FREQUENCIA, A.NOME_ALUNO, T.NOME_TREINO,
-                   F.DATA_FREQUENCIA, F.PRESENTE
-            FROM FREQUENCIA F
-            JOIN ALUNO A ON A.ID_ALUNO = F.ID_ALUNO
-            JOIN TREINO T ON T.ID_TREINO = F.ID_TREINO
-            ORDER BY F.DATA_FREQUENCIA DESC
-        """
-        return self._consultar(sql)
+        oracle = OracleQueries()
+
+        try:
+            cursor = oracle.connect()
+
+            query = """
+                SELECT F.ID_FREQUENCIA, A.NOME_ALUNO, F.DATA_HORA_ENTRADA
+                FROM FREQUENCIA F
+                JOIN ALUNO A ON A.ID_ALUNO = F.ID_ALUNO
+                ORDER BY F.DATA_HORA_ENTRADA DESC
+            """
+
+            cursor.execute(query)
+            return cursor.fetchall()
+
+        finally:
+            oracle.close()
 
     def listar_por_aluno(self, id_aluno):
-        sql = """
-            SELECT F.ID_FREQUENCIA, T.NOME_TREINO,
-                   F.DATA_FREQUENCIA, F.PRESENTE
-            FROM FREQUENCIA F
-            JOIN TREINO T ON T.ID_TREINO = F.ID_TREINO
-            WHERE F.ID_ALUNO = :id_aluno
-            ORDER BY F.DATA_FREQUENCIA DESC
-        """
-        return self._consultar(sql, {"id_aluno": int(id_aluno)})
+        oracle = OracleQueries()
+
+        try:
+            cursor = oracle.connect()
+
+            query = f"""
+                SELECT ID_FREQUENCIA, DATA_HORA_ENTRADA
+                FROM FREQUENCIA
+                WHERE ID_ALUNO = {int(id_aluno)}
+                ORDER BY DATA_HORA_ENTRADA DESC
+            """
+
+            cursor.execute(query)
+            return cursor.fetchall()
+
+        finally:
+            oracle.close()
