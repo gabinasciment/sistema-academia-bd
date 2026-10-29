@@ -1,6 +1,6 @@
-SELECT a.id_aluno, a.nome AS aluno, COUNT(t.id_treino) AS quantidade_treinos
-FROM aluno a
-LEFT JOIN treino t
-    ON t.id_aluno = a.id_aluno
-GROUP BY a.id_aluno, a.nome
-ORDER BY a.nome
+SELECT a.ID_ALUNO, a.NOME_ALUNO AS aluno, COUNT(t.ID_TREINO) AS quantidade_treinos
+FROM ALUNO a
+LEFT JOIN TREINO t
+    ON t.ID_ALUNO = a.ID_ALUNO
+GROUP BY a.ID_ALUNO, a.NOME_ALUNO
+ORDER BY a.NOME_ALUNO
