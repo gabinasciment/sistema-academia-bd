@@ -55,3 +55,11 @@ Com a resposta do prompt foi possível perceber alguns erros no tipo do time esc
 Fonte : Claude Code (Anthropic)
 
 Usei a ferramenta como apoio para estudar os conceitos (chaves, restrições e sequences) e para gerar uma primeira versão dos scripts a partir do diagrama do grupo. Revisei e entendi cada comando, mantive o padrão de nomes do projeto de exemplo, deixei as FKs sem ON DELETE CASCADE para atender ao item 6.c.5.i e testei no Oracle a criação das tabelas, os dados de exemplo e as restrições (FK, UNIQUE e NOT NULL).
+
+## Prompt 3 — README: instalação e banco de dados (Esther)
+
+"Me ajude a entender exatamente o que o README precisa ter segundo o edital (como executar o projeto no Linux), para que não haja erros e o trabalho atenda ao que o professor pede, e me ajude a montar o README.md com a descrição das tabelas, a instalação, a configuração da conexão, a criação das tabelas e os problemas mais comuns."
+
+Fonte : Claude Code (Anthropic)
+
+A resposta explicou o que o edital exige no README e propôs uma estrutura e um texto para cada seção. Usei como base, revisei as instruções, conferi os comandos e os resultados esperados com os testes que fiz no Oracle e deixei a seção de execução do sistema para a Laysa completar com os menus.
