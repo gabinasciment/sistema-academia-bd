@@ -1,7 +1,7 @@
-SELECT t.id_treino, t.nome AS treino, t.objetivo, a.nome AS aluno, i.nome AS instrutor, t.data_criacao
-FROM treino t
-INNER JOIN aluno a
-    ON a.id_aluno = t.id_aluno
-INNER JOIN instrutor i
-    ON i.id_instrutor = t.id_instrutor
-ORDER BY t.data_criacao DESC
+SELECT t.ID_TREINO, t.NOME_TREINO AS treino, t.OBJETIVO, a.NOME_ALUNO AS aluno, i.NOME_INSTRUTOR AS instrutor, t.DATA_CRIACAO
+FROM TREINO t
+INNER JOIN ALUNO a
+    ON a.ID_ALUNO = t.ID_ALUNO
+INNER JOIN INSTRUTOR i
+    ON i.ID_INSTRUTOR = t.ID_INSTRUTOR
+ORDER BY t.DATA_CRIACAO DESC
