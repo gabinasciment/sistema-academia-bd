@@ -1,135 +1,280 @@
 # Sistema de Academia
 
-Sistema de gerenciamento de uma academia de ginástica, desenvolvido na disciplina de **Banco de Dados** (Prof. Howard Roatti, 2026/2). O programa roda no terminal, em Python, e guarda os dados em um banco **Oracle**. Pelo menu é possível gerar relatórios e inserir, atualizar e remover alunos, instrutores, treinos e frequências.
+Sistema de gerenciamento de academia desenvolvido em Python com banco de dados Oracle. O projeto permite realizar operações de cadastro, consulta, atualização e exclusão de alunos, instrutores, treinos e frequências, além de gerar relatórios relacionados aos treinos.
 
-<!-- completar com os nomes completos -->
-**Integrantes:** Gabriela Nascimento, Esther, Érika, Lara, Caio e Laysa
+## Objetivo do projeto
 
-**Vídeo de demonstração:** _(link do YouTube)_
+Desenvolver uma aplicação integrada a um banco de dados relacional Oracle para facilitar o gerenciamento das principais informações de uma academia, utilizando Python para a interação com o banco de dados.
 
----
+## Tecnologias utilizadas
+
+- **Python 3.10**
+- **Oracle Database**
+- **Oracle Instant Client**
+- **cx_Oracle 8.3.0**
+- **Pandas**
+- **Git e GitHub**
+
+## Funcionalidades
+
+### 1. Menu principal
+
+A aplicação apresenta uma tela inicial (*Splash Screen*) e um menu principal com as seguintes opções:
+
+1. Gerenciar alunos.
+2. Gerenciar instrutores.
+3. Gerenciar treinos.
+4. Gerenciar frequências.
+5. Consultar relatórios.
+0. Sair do sistema.
+
+### 2. Gerenciamento de alunos
+
+Permite realizar as seguintes operações:
+
+- Listar os alunos cadastrados.
+- Cadastrar novos alunos.
+- Consultar um aluno pelo identificador.
+- Atualizar os dados de um aluno.
+- Excluir um aluno.
+- Voltar ao menu principal.
+
+Os dados dos alunos incluem nome, e-mail, telefone, data de nascimento e gênero.
+
+### 3. Gerenciamento de instrutores
+
+Permite:
+
+- Listar os instrutores cadastrados.
+- Cadastrar novos instrutores.
+- Consultar um instrutor pelo identificador.
+- Atualizar os dados de um instrutor.
+- Excluir um instrutor.
+- Voltar ao menu principal.
+
+Os dados dos instrutores incluem nome, e-mail e telefone.
+
+A exclusão de registros pode ser impedida quando existem relacionamentos com outros registros do banco de dados, conforme as restrições de integridade referencial.
+
+### 4. Gerenciamento de treinos
+
+Permite:
+
+- Listar os treinos cadastrados.
+- Cadastrar novos treinos.
+- Consultar um treino pelo identificador.
+- Atualizar os dados de um treino.
+- Excluir um treino.
+- Listar os treinos de um aluno.
+- Voltar ao menu principal.
+
+Cada treino está associado a um aluno e a um instrutor. Os dados incluem nome do treino, objetivo e data de criação.
+
+### 5. Gerenciamento de frequências
+
+Permite:
+
+- Listar os registros de frequência.
+- Registrar uma nova frequência.
+- Consultar uma frequência pelo identificador.
+- Atualizar um registro de frequência.
+- Excluir um registro de frequência.
+- Listar as frequências de um aluno.
+- Voltar ao menu principal.
+
+Cada registro de frequência está associado a um aluno e contém a data e a hora de entrada na academia.
+
+### 6. Relatórios
+
+O sistema disponibiliza dois relatórios:
+
+**Relatório de treinos por aluno**
+
+Apresenta os alunos e a quantidade de treinos associados a cada um.
+
+**Relatório de treinos com instrutores**
+
+Apresenta informações sobre os treinos, os alunos relacionados e os instrutores responsáveis.
+
+## Estrutura do projeto
+
+A organização principal dos arquivos é:
+
+```text
+sistema-academia-bd/
+├── sql/
+├── src/
+│   ├── conexion/
+│   │   ├── passphrase/
+│   │   │   └── authentication.oracle
+│   │   └── oracle_queries.py
+│   ├── controller/
+│   │   ├── controller_aluno.py
+│   │   ├── controller_instrutor.py
+│   │   ├── controller_treino.py
+│   │   └── controller_frequencia.py
+│   ├── reports/
+│   │   └── relatorios.py
+│   ├── sql/
+│   │   ├── relatorio_treinos_por_aluno.sql
+│   │   └── relatorio_treinos_com_instrutores.sql
+│   ├── utils/
+│   │   ├── menu.py
+│   │   ├── menu_alunos.py
+│   │   ├── menu_instrutores.py
+│   │   ├── menu_treinos.py
+│   │   ├── menu_frequencias.py
+│   │   └── splash_screen.py
+│   ├── create_tables_and_records.py
+│   ├── principal.py
+│   └── requirements.txt
+└── README.md
+```
+
+**Observação:** a estrutura acima representa os principais arquivos utilizados pela aplicação. Outros arquivos SQL e auxiliares podem existir no repositório.
 
 ## Banco de dados
 
-O sistema possui quatro tabelas:
+O projeto utiliza o Oracle Database para armazenar os dados da academia.
 
-| Tabela | O que guarda | Relacionamento |
-|---|---|---|
-| `ALUNO` | Dados dos alunos (nome, e-mail, telefone, data de nascimento, gênero) | Tabela pai |
-| `INSTRUTOR` | Dados dos instrutores (nome, e-mail, telefone) | Tabela pai |
-| `TREINO` | Treinos montados para cada aluno | 1 aluno possui N treinos · 1 instrutor orienta N treinos |
-| `FREQUENCIA` | Entradas dos alunos na academia (data e hora) | 1 aluno registra N frequências |
+As principais entidades são:
 
-- As chaves primárias são geradas por **sequences** (ex.: `ALUNO_ID_ALUNO_SEQ`).
-- Os e-mails de aluno e instrutor são **únicos** (`UNIQUE`).
-- As chaves estrangeiras **não** usam `ON DELETE CASCADE`: antes de remover um aluno ou instrutor, o próprio sistema verifica se existem registros ligados a ele e pergunta ao usuário o que fazer.
+- **ALUNO:** armazena os dados dos alunos.
+- **INSTRUTOR:** armazena os dados dos instrutores.
+- **TREINO:** armazena os treinos e seus relacionamentos com alunos e instrutores.
+- **FREQUENCIA:** registra as entradas dos alunos na academia.
 
-O diagrama relacional está em [diagramas/diagramarelacional.png](diagramas/diagramarelacional.png).
+As tabelas utilizam chaves primárias e relacionamentos por chaves estrangeiras para manter a integridade dos dados. O projeto também utiliza sequências para gerar identificadores.
 
----
+### Configuração da conexão
+
+A conexão com o banco de dados é configurada em:
+
+`src/conexion/oracle_queries.py`
+
+O arquivo de autenticação está localizado em:
+
+`src/conexion/passphrase/authentication.oracle`
+
+O arquivo de autenticação deve conter as credenciais no formato esperado pela aplicação, sem que senhas reais sejam publicadas no GitHub.
+
+A configuração da conexão deve corresponder ao ambiente Oracle utilizado pelo grupo, incluindo o endereço IP do servidor, a porta e o serviço do banco de dados.
+
+**Importante:** o endereço IP pode variar de acordo com a rede utilizada. Caso a aplicação não consiga se conectar, confira o endereço configurado e se o banco Oracle está em execução e acessível.
 
 ## Requisitos
 
-- Linux (máquina virtual da disciplina)
-- Oracle Database (XE) em execução na própria máquina (`localhost`, porta `1521`)
-- Oracle Instant Client (já instalado na VM da disciplina)
-- Python 3 e pip
+Antes de executar o projeto, instale ou configure:
 
-## Instalação
+- Python 3.10 de 64 bits.
+- Oracle Database acessível pela máquina que executará a aplicação.
+- Oracle Instant Client compatível com o ambiente.
+- Dependências Python listadas em `src/requirements.txt`.
 
-1. Baixe o projeto e entre na pasta `src`:
+A versão Python 3.10 é utilizada neste projeto por compatibilidade com a versão do `cx_Oracle` especificada nos requisitos.
 
-   ```shell
-   git clone https://github.com/gabinasciment/sistema-academia-bd.git
-   cd sistema-academia-bd/src
-   ```
+## Instalação e execução
 
-2. Instale as bibliotecas:
+### 1. Clonar o repositório
 
-   ```shell
-   pip3 install -r requirements.txt
-   ```
+No terminal, execute:
 
-## Configurando a conexão com o banco
-
-O usuário e a senha do Oracle ficam no arquivo [src/conexion/passphrase/authentication.oracle](src/conexion/passphrase/authentication.oracle), no formato `usuario,senha`:
-
-```
-labdatabase,lab@Database2025
+```bash
+git clone https://github.com/gabinasciment/sistema-academia-bd.git
+cd sistema-academia-bd
 ```
 
-Se o usuário ou a senha do Oracle na sua máquina forem diferentes, altere esse arquivo.
+### 2. Instalar as dependências
 
-O módulo de conexão ([src/conexion/oracle_queries.py](src/conexion/oracle_queries.py)) conecta em `localhost:1521`, tentando primeiro o SID `XE` e, se não conseguir, o service name `XEPDB1`.
+Na pasta raiz do projeto, execute:
 
-## Criando as tabelas e os dados de exemplo
-
-Ainda dentro da pasta `src`, execute:
-
-```shell
-python3 create_tables_and_records.py
+```bash
+py -3.10 -m pip install -r src/requirements.txt
 ```
 
-O script executa os arquivos da pasta [sql](sql):
+Se o comando `py -3.10` não estiver disponível, verifique se o Python 3.10 está instalado e registrado no inicializador do Python para Windows.
 
-- [sql/create_tables_academia.sql](sql/create_tables_academia.sql): apaga as tabelas, se já existirem, e cria as tabelas, chaves primárias, chaves estrangeiras e sequences
-- [sql/inserting_samples_records.sql](sql/inserting_samples_records.sql): insere os dados de exemplo
+### 3. Configurar o Oracle Instant Client
 
-No final, ele mostra a quantidade de registros de cada tabela:
+No Windows, adicione a pasta do Oracle Instant Client ao `PATH`.
 
-```
-TOTAL DE REGISTROS POR TABELA
-  ALUNO        10
-  INSTRUTOR    4
-  TREINO       20
-  FREQUENCIA   30
+Por exemplo, se o Instant Client estiver instalado no caminho utilizado durante o desenvolvimento:
+
+```powershell
+$env:PATH = "C:\Users\Layssa\Documents\oracle\instantclient_23_26;$env:PATH"
 ```
 
-O script pode ser executado quantas vezes for necessário: ele sempre recria o banco do zero com os mesmos dados.
+**Atenção:** esse caminho é específico do ambiente de desenvolvimento. Se o projeto for executado em outro computador, substitua-o pelo caminho correto da instalação local.
 
-Avisos esperados durante a execução:
+O comando acima configura o `PATH` somente para o terminal atual. Se abrir outro terminal, será necessário configurar novamente ou ajustar as variáveis de ambiente do Windows de forma permanente.
 
-- Na primeira vez, os comandos `DROP` mostram `ORA-00942` e `ORA-02289` (a tabela ou a sequência ainda não existe).
-- O último comando (`ALTER USER ... QUOTA`) pode mostrar `ORA-01031` quando o usuário já tem espaço liberado no banco.
+Para verificar se o `cx_Oracle` consegue carregar o cliente Oracle, execute:
 
-O que importa é o resultado final: os totais de registros de cada tabela.
-
-## Executando o sistema
-
-Depois de criar as tabelas, ainda dentro da pasta `src`:
-
-```shell
-python3 principal.py
+```powershell
+py -3.10 -c "import cx_Oracle; print(cx_Oracle.clientversion())"
 ```
 
-<!-- Laysa: completar com a descrição da tela inicial e dos menus -->
+Se a configuração estiver correta, o comando exibirá a versão do cliente Oracle.
 
----
+### 4. Configurar a conexão com o banco
 
-## Organização do projeto
+Confira as configurações de conexão em `src/conexion/oracle_queries.py` e as credenciais no arquivo de autenticação.
 
-- [diagramas](diagramas): diagrama relacional do sistema (Mermaid e PNG)
-- [sql](sql): scripts de criação das tabelas e de inserção dos dados de exemplo
-- [src](src): código do sistema
-  - [conexion](src/conexion): módulo de conexão com o Oracle e arquivo de autenticação
-  - [controller](src/controller): classes responsáveis por inserir, atualizar e remover registros
-  - [model](src/model): classes que representam as entidades do banco
-  - [reports](src/reports): classe que gera os relatórios
-  - [sql](src/sql): consultas SQL dos relatórios
-  - [utils](src/utils): menus e tela inicial (splash screen)
-  - [create_tables_and_records.py](src/create_tables_and_records.py): cria as tabelas e insere os dados de exemplo
-  - `principal.py`: programa principal
-- [PROMPTS.md](PROMPTS.md): registro dos prompts de IA utilizados no desenvolvimento
+Antes de executar a aplicação, confirme que:
 
----
+- O banco Oracle está em execução.
+- O computador consegue alcançar o servidor do banco.
+- O endereço IP, a porta e o serviço estão corretos.
+- As credenciais configuradas são válidas.
 
-## Problemas comuns
+Não publique senhas ou outras credenciais de acesso no repositório.
 
-| Mensagem | Causa | Solução |
-|---|---|---|
-| `ORA-12541: TNS:no listener` | O Oracle não está em execução | Inicie o Oracle e tente novamente |
-| `ORA-01017: invalid username/password` | Usuário ou senha incorretos | Confira o arquivo `authentication.oracle` |
-| `ORA-28001: the password has expired` | A senha do usuário expirou | Como administrador, execute `ALTER PROFILE DEFAULT LIMIT PASSWORD_LIFE_TIME UNLIMITED;` e `ALTER USER labdatabase IDENTIFIED BY "lab@Database2025";` |
-| `ORA-01031: insufficient privileges` em um `CREATE TABLE` ou `CREATE SEQUENCE` | O usuário não tem permissão para criar objetos | Como administrador, execute `GRANT ALL PRIVILEGES TO LABDATABASE;` |
-| `DPI-1047: Cannot locate a 64-bit Oracle Client library` | O Oracle Instant Client não foi encontrado | Verifique a instalação do Instant Client e as variáveis `ORACLE_HOME` e `LD_LIBRARY_PATH` |
-| `FileNotFoundError` ao abrir um relatório | O sistema foi executado fora da pasta `src` | Entre na pasta `src` antes de executar |
+### 5. Executar o sistema
+
+A partir da pasta raiz do projeto, entre na pasta `src`:
+
+```bash
+cd src
+```
+
+Execute a aplicação:
+
+```bash
+py -3.10 principal.py
+```
+
+A aplicação exibirá a tela inicial e, em seguida, o menu principal. Utilize os números apresentados para navegar pelas funcionalidades.
+
+## Criação das tabelas e dos registros iniciais
+
+O projeto contém o script:
+
+`src/create_tables_and_records.py`
+
+Esse arquivo é responsável pela criação das estruturas do banco e pela inserção de registros iniciais, conforme as instruções implementadas no script.
+
+Para executá-lo, entre na pasta `src` e utilize:
+
+```bash
+py -3.10 create_tables_and_records.py
+```
+
+**Atenção:** execute esse script somente quando necessário e depois de conferir seu conteúdo. Ele pode remover e recriar objetos do banco de dados, apagando registros existentes. Não o execute novamente em um banco com dados que deseja preservar sem antes verificar os comandos utilizados.
+
+## Tratamento de erros e observações
+
+- A aplicação depende de uma conexão ativa com o Oracle Database.
+- Problemas com o Oracle Instant Client podem causar erros de carregamento da biblioteca cliente, como `DPI-1047`.
+- Falhas de conexão podem ocorrer quando o endereço IP, a porta, o serviço ou as credenciais estão incorretos.
+- A exclusão de registros relacionados a outros dados pode ser bloqueada pelas restrições de chaves estrangeiras.
+- Mensagens indicando que tabelas ou sequências não existem podem aparecer na primeira execução do script de criação quando ele tenta remover objetos ainda não criados. Confira o resultado final da execução antes de concluir que houve falha.
+
+## Autores
+
+Projeto desenvolvido em grupo como atividade acadêmica de banco de dados, com integração entre Python e Oracle Database.
+
+Consulte o histórico de contribuições do repositório para identificar as alterações realizadas por cada integrante.
+
+## Repositório
+
+GitHub: https://github.com/gabinasciment/sistema-academia-bd

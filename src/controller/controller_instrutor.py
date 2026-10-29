@@ -2,25 +2,31 @@ from conexion.oracle_queries import OracleQueries
 
 
 class ControllerInstrutor:
-    """CRUD da tabela INSTRUTOR.
-
-    Colunas assumidas: ID_INSTRUTOR, NOME_INSTRUTOR, EMAIL_INSTRUTOR,
-    TELEFONE_INSTRUTOR, ESPECIALIDADE.
-    Sequence assumida: INSTRUTOR_ID_INSTRUTOR_SEQ (confira o nome no banco).
-    """
+    """Controlador CRUD da tabela INSTRUTOR."""
 
     @staticmethod
     def _escapar(texto):
-        """Duplica aspas simples para não quebrar o SQL montado como texto."""
-        return texto.strip().replace("'", "''")
+        """Prepara textos para uso em consultas SQL."""
+        if texto is None:
+            return ""
+        return str(texto).strip().replace("'", "''")
 
     @staticmethod
-    def _validar(nome):
+    def _validar(nome, email, telefone):
+        """Verifica se os campos obrigatórios foram preenchidos."""
         if not nome or not nome.strip():
             raise ValueError("O nome do instrutor é obrigatório.")
 
-    def inserir(self, nome, email, telefone, especialidade) -> bool:
-        self._validar(nome)
+        if not email or not email.strip():
+            raise ValueError("O e-mail do instrutor é obrigatório.")
+
+        if not telefone or not telefone.strip():
+            raise ValueError("O telefone do instrutor é obrigatório.")
+
+    def inserir(self, nome, email, telefone) -> bool:
+        """Cadastra um novo instrutor."""
+        self._validar(nome, email, telefone)
+
         oracle = OracleQueries(can_write=True)
 
         try:
@@ -29,22 +35,18 @@ class ControllerInstrutor:
             nome = self._escapar(nome)
             email = self._escapar(email)
             telefone = self._escapar(telefone)
-            especialidade = self._escapar(especialidade)
 
             query = f"""
                 INSERT INTO INSTRUTOR (
                     ID_INSTRUTOR,
                     NOME_INSTRUTOR,
                     EMAIL_INSTRUTOR,
-                    TELEFONE_INSTRUTOR,
-                    ESPECIALIDADE
-                )
-                VALUES (
+                    TELEFONE_INSTRUTOR
+                ) VALUES (
                     INSTRUTOR_ID_INSTRUTOR_SEQ.NEXTVAL,
                     '{nome}',
                     '{email}',
-                    '{telefone}',
-                    '{especialidade}'
+                    '{telefone}'
                 )
             """
 
@@ -54,27 +56,26 @@ class ControllerInstrutor:
         finally:
             oracle.close()
 
-    def atualizar(self, id_instrutor, nome, email, telefone,
-                  especialidade) -> bool:
-        self._validar(nome)
+    def atualizar(self, id_instrutor, nome, email, telefone) -> bool:
+        """Atualiza os dados de um instrutor existente."""
+        self._validar(nome, email, telefone)
+
         oracle = OracleQueries(can_write=True)
 
         try:
             cursor = oracle.connect()
 
+            id_instrutor = int(id_instrutor)
             nome = self._escapar(nome)
             email = self._escapar(email)
             telefone = self._escapar(telefone)
-            especialidade = self._escapar(especialidade)
 
             query = f"""
                 UPDATE INSTRUTOR
-                SET
-                    NOME_INSTRUTOR = '{nome}',
+                SET NOME_INSTRUTOR = '{nome}',
                     EMAIL_INSTRUTOR = '{email}',
-                    TELEFONE_INSTRUTOR = '{telefone}',
-                    ESPECIALIDADE = '{especialidade}'
-                WHERE ID_INSTRUTOR = {int(id_instrutor)}
+                    TELEFONE_INSTRUTOR = '{telefone}'
+                WHERE ID_INSTRUTOR = {id_instrutor}
             """
 
             oracle.write(query)
@@ -84,14 +85,17 @@ class ControllerInstrutor:
             oracle.close()
 
     def deletar(self, id_instrutor) -> bool:
+        """Exclui um instrutor pelo ID."""
         oracle = OracleQueries(can_write=True)
 
         try:
             cursor = oracle.connect()
 
+            id_instrutor = int(id_instrutor)
+
             query = f"""
                 DELETE FROM INSTRUTOR
-                WHERE ID_INSTRUTOR = {int(id_instrutor)}
+                WHERE ID_INSTRUTOR = {id_instrutor}
             """
 
             oracle.write(query)
@@ -101,16 +105,21 @@ class ControllerInstrutor:
             oracle.close()
 
     def buscar_por_id(self, id_instrutor):
+        """Busca um instrutor pelo ID."""
         oracle = OracleQueries()
 
         try:
             cursor = oracle.connect()
 
+            id_instrutor = int(id_instrutor)
+
             query = f"""
-                SELECT ID_INSTRUTOR, NOME_INSTRUTOR, EMAIL_INSTRUTOR,
-                       TELEFONE_INSTRUTOR, ESPECIALIDADE
+                SELECT ID_INSTRUTOR,
+                       NOME_INSTRUTOR,
+                       EMAIL_INSTRUTOR,
+                       TELEFONE_INSTRUTOR
                 FROM INSTRUTOR
-                WHERE ID_INSTRUTOR = {int(id_instrutor)}
+                WHERE ID_INSTRUTOR = {id_instrutor}
             """
 
             cursor.execute(query)
@@ -120,14 +129,17 @@ class ControllerInstrutor:
             oracle.close()
 
     def listar(self):
+        """Retorna todos os instrutores cadastrados."""
         oracle = OracleQueries()
 
         try:
             cursor = oracle.connect()
 
             query = """
-                SELECT ID_INSTRUTOR, NOME_INSTRUTOR, EMAIL_INSTRUTOR,
-                       TELEFONE_INSTRUTOR, ESPECIALIDADE
+                SELECT ID_INSTRUTOR,
+                       NOME_INSTRUTOR,
+                       EMAIL_INSTRUTOR,
+                       TELEFONE_INSTRUTOR
                 FROM INSTRUTOR
                 ORDER BY NOME_INSTRUTOR
             """
