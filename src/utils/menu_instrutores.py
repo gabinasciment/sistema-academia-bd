@@ -1,121 +1,108 @@
 from controller.controller_instrutor import ControllerInstrutor
+from utils.config import confirmar, ler_id, ler_texto
+
+controller = ControllerInstrutor()
 
 
-def menu_instrutores():
-    controller = ControllerInstrutor()
+def listar() -> bool:
+    """Lista os instrutores (PK + campos descritivos). Devolve False se não houver."""
+    instrutores = controller.listar()
 
-    while True:
-        print("\n" + "=" * 40)
-        print("       GERENCIAMENTO DE INSTRUTORES")
-        print("=" * 40)
-        print("1 - Listar instrutores")
-        print("2 - Cadastrar instrutor")
-        print("3 - Atualizar instrutor")
-        print("4 - Excluir instrutor")
-        print("0 - Voltar ao menu principal")
-        print("=" * 40)
+    print("\n-------------- INSTRUTORES CADASTRADOS --------------")
+    if not instrutores:
+        print("Nenhum instrutor cadastrado.")
+        return False
 
-        opcao = input("Escolha uma opção: ").strip()
+    for instrutor in instrutores:
+        print(f"ID: {instrutor[0]:<4} | Nome: {instrutor[1]:<22} | E-mail: {instrutor[2]}")
+    return True
 
-        try:
-            if opcao == "1":
-                instrutores = controller.listar()
 
-                print("\n--- LISTA DE INSTRUTORES ---")
+def inserir():
+    print("\n============== CADASTRAR INSTRUTOR ==============")
 
-                if not instrutores:
-                    print("Nenhum instrutor cadastrado.")
-                else:
-                    for instrutor in instrutores:
-                        print(
-                            f"ID: {instrutor[0]} | "
-                            f"Nome: {instrutor[1]} | "
-                            f"E-mail: {instrutor[2]} | "
-                            f"Telefone: {instrutor[3]}"
-                        )
+    nome = ler_texto("Nome")
+    email = ler_texto("E-mail")
 
-            elif opcao == "2":
-                print("\n--- CADASTRAR INSTRUTOR ---")
-                nome = input("Nome: ").strip()
-                email = input("E-mail: ").strip()
-                telefone = input("Telefone: ").strip()
+    # Verifica se o registro ja existe antes de inserir
+    if controller.existe_email(email):
+        print(f"\nJá existe um instrutor cadastrado com o e-mail {email}.")
+        return
 
-                if controller.inserir(nome, email, telefone):
-                    print("Instrutor cadastrado com sucesso!")
-                else:
-                    print("Não foi possível cadastrar o instrutor.")
+    telefone = ler_texto("Telefone")
 
-            elif opcao == "3":
-                print("\n--- ATUALIZAR INSTRUTOR ---")
-                id_instrutor = input("ID do instrutor: ").strip()
+    novo_id = controller.inserir(nome, email, telefone)
 
-                instrutor = controller.buscar_por_id(id_instrutor)
+    print("\nInstrutor cadastrado com sucesso!")
+    print(controller.obter(novo_id).to_string())
 
-                if not instrutor:
-                    print("Instrutor não encontrado.")
-                    continue
 
-                print("Pressione Enter para manter o valor atual.")
+def atualizar():
+    print("\n============== ATUALIZAR INSTRUTOR ==============")
 
-                nome = input(f"Nome [{instrutor[1]}]: ").strip()
-                email = input(f"E-mail [{instrutor[2]}]: ").strip()
-                telefone = input(f"Telefone [{instrutor[3]}]: ").strip()
+    if not listar():
+        return
 
-                nome = nome or instrutor[1]
-                email = email or instrutor[2]
-                telefone = telefone or instrutor[3]
+    id_instrutor = ler_id("\nID do instrutor que deseja atualizar: ")
+    if id_instrutor is None:
+        return
 
-                if controller.atualizar(
-                    id_instrutor, nome, email, telefone
-                ):
-                    print("Instrutor atualizado com sucesso!")
-                else:
-                    print("Nenhuma alteração realizada.")
+    instrutor = controller.obter(id_instrutor)
+    if instrutor is None:
+        print("\nInstrutor não encontrado.")
+        return
 
-            elif opcao == "4":
-                print("\n--- EXCLUIR INSTRUTOR ---")
-                id_instrutor = input("ID do instrutor: ").strip()
+    print("\nDados atuais:")
+    print(instrutor.to_string())
+    print("\nInforme os novos dados (ENTER mantém o valor atual).")
 
-                instrutor = controller.buscar_por_id(id_instrutor)
+    nome = ler_texto("Nome", instrutor.get_nome_instrutor())
+    email = ler_texto("E-mail", instrutor.get_email_instrutor())
+    if controller.existe_email(email, ignorar_id=id_instrutor):
+        print(f"\nJá existe outro instrutor com o e-mail {email}.")
+        return
+    telefone = ler_texto("Telefone", instrutor.get_telefone_instrutor())
 
-                if not instrutor:
-                    print("Instrutor não encontrado.")
-                    continue
+    controller.atualizar(id_instrutor, nome, email, telefone)
 
-                print(f"Nome: {instrutor[1]}")
-                confirmacao = input(
-                    "Tem certeza de que deseja excluir? (s/n): "
-                ).strip().lower()
+    # Exibe o registro atualizado (edital 6.d.7)
+    print("\nInstrutor atualizado com sucesso! Registro atualizado:")
+    print(controller.obter(id_instrutor).to_string())
 
-                if confirmacao == "s":
-                    if controller.deletar(id_instrutor):
-                        print("Instrutor excluído com sucesso!")
-                    else:
-                        print("Não foi possível excluir o instrutor.")
-                else:
-                    print("Exclusão cancelada.")
 
-            elif opcao == "0":
-                print("Voltando ao menu principal...")
-                break
+def excluir():
+    print("\n=============== EXCLUIR INSTRUTOR ===============")
 
-            else:
-                print("Opção inválida. Tente novamente.")
+    if not listar():
+        return
 
-        except ValueError as erro:
-            print(f"Entrada inválida: {erro}")
+    id_instrutor = ler_id("\nID do instrutor que deseja excluir: ")
+    if id_instrutor is None:
+        return
 
-        except Exception as erro:
-            mensagem = str(erro)
+    instrutor = controller.obter(id_instrutor)
+    if instrutor is None:
+        print("\nInstrutor não encontrado.")
+        return
 
-            if "ORA-02292" in mensagem:
-                print(
-                    "\nNão foi possível excluir o instrutor, pois "
-                    "ele está associado a um ou mais treinos."
-                )
-                print(
-                    "Remova ou reassocie esses treinos antes de "
-                    "tentar excluir o instrutor."
-                )
-            else:
-                print(f"Não foi possível realizar a operação: {erro}")
+    print("\nInstrutor selecionado:")
+    print(instrutor.to_string())
+
+    if not confirmar("\nTem certeza de que deseja excluir este instrutor? (s/n): "):
+        print("\nExclusão cancelada. Voltando ao menu principal.")
+        return False
+
+    # Verifica se o instrutor e chave estrangeira em TREINO (edital 6.c.5.i)
+    treinos = controller.contar_treinos(id_instrutor)
+
+    if treinos > 0:
+        print(f"\nEste instrutor orienta {treinos} treino(s).")
+        if not confirmar("Deseja excluir também esses treinos? (s/n): "):
+            print("\nO instrutor NÃO foi excluído, pois possui treinos relacionados.")
+            return
+
+        controller.deletar_com_treinos(id_instrutor)
+        print("\nInstrutor e treinos relacionados excluídos com sucesso!")
+    else:
+        controller.deletar(id_instrutor)
+        print("\nInstrutor excluído com sucesso!")

@@ -1,6 +1,7 @@
 
 import time
 from conexion.oracle_queries import OracleQueries
+from utils.config import QUERY_COUNT, mensagem_erro
 
 
 def exibir_splash():
@@ -31,10 +32,7 @@ def exibir_splash():
         tabelas = ["aluno", "instrutor", "treino", "frequencia"]
 
         for tabela in tabelas:
-            query = (
-                f"SELECT COUNT(1) AS total_{tabela} "
-                f"FROM {tabela}"
-            )
+            query = QUERY_COUNT.format(tabela=tabela)
             resultado = oracle.sqlToMatrix(query)
             total = resultado[0][0][0]
 
@@ -42,7 +40,7 @@ def exibir_splash():
 
     except Exception as erro:
         print("\nNão foi possível consultar os registros no Oracle.")
-        print(f"Erro: {erro}")
+        print(mensagem_erro(erro))
 
     finally:
         oracle.close()

@@ -1,192 +1,147 @@
-from controller.controller_treino import ControllerTreino
 from controller.controller_aluno import ControllerAluno
 from controller.controller_instrutor import ControllerInstrutor
+from controller.controller_treino import ControllerTreino
+from utils import menu_alunos, menu_instrutores
+from utils.config import confirmar, ler_id, ler_texto
+
+controller = ControllerTreino()
+aluno_controller = ControllerAluno()
+instrutor_controller = ControllerInstrutor()
 
 
-def menu_treinos():
-    treino_controller = ControllerTreino()
-    aluno_controller = ControllerAluno()
-    instrutor_controller = ControllerInstrutor()
+def listar() -> bool:
+    """Lista os treinos (PK + campos descritivos). Devolve False se não houver."""
+    treinos = controller.listar()
 
-    while True:
-        print("\n" + "=" * 40)
-        print("          GERENCIAMENTO DE TREINOS")
-        print("=" * 40)
-        print("1 - Listar treinos")
-        print("2 - Cadastrar treino")
-        print("3 - Atualizar treino")
-        print("4 - Excluir treino")
-        print("5 - Listar treinos por aluno")
-        print("0 - Voltar ao menu principal")
-        print("=" * 40)
+    print("\n---------------- TREINOS CADASTRADOS ----------------")
+    if not treinos:
+        print("Nenhum treino cadastrado.")
+        return False
 
-        opcao = input("Escolha uma opção: ").strip()
+    for treino in treinos:
+        print(
+            f"ID: {treino[0]:<4} | Treino: {treino[3]:<22} | "
+            f"Aluno: {treino[1]:<20} | Instrutor: {treino[2]}"
+        )
+    return True
 
-        try:
-            if opcao == "1":
-                treinos = treino_controller.listar()
 
-                print("\n--- LISTA DE TREINOS ---")
+def listar_por_aluno():
+    """Mostra os treinos de um aluno escolhido."""
+    if not menu_alunos.listar():
+        return
 
-                if not treinos:
-                    print("Nenhum treino cadastrado.")
-                else:
-                    for treino in treinos:
-                        print(
-                            f"ID: {treino[0]} | "
-                            f"Aluno: {treino[1]} | "
-                            f"Instrutor: {treino[2]} | "
-                            f"Treino: {treino[3]} | "
-                            f"Objetivo: {treino[4] or '-'} | "
-                            f"Data de criação: {treino[5]}"
-                        )
+    id_aluno = ler_id("\nID do aluno: ")
+    if id_aluno is None:
+        return
 
-            elif opcao == "2":
-                print("\n--- CADASTRAR TREINO ---")
+    treinos = controller.listar_por_aluno(id_aluno)
+    print("\n--------------- TREINOS DO ALUNO ---------------")
+    if not treinos:
+        print("Esse aluno não possui treinos cadastrados.")
+        return
 
-                alunos = aluno_controller.listar()
-                instrutores = instrutor_controller.listar()
+    for treino in treinos:
+        print(
+            f"ID: {treino[0]} | Instrutor: {treino[1]} | Treino: {treino[2]} | "
+            f"Objetivo: {treino[3] or '-'} | Criado em: {treino[4]:%d/%m/%Y}"
+        )
 
-                if not alunos:
-                    print("Não há alunos cadastrados. Cadastre um aluno primeiro.")
-                    continue
 
-                if not instrutores:
-                    print("Não há instrutores cadastrados. Cadastre um instrutor primeiro.")
-                    continue
+def _escolher_aluno_e_instrutor(id_aluno_atual=None, id_instrutor_atual=None):
+    """Mostra alunos e instrutores e devolve os IDs escolhidos (ou None, None)."""
+    if not menu_alunos.listar() or not menu_instrutores.listar():
+        print("\nÉ preciso ter alunos e instrutores cadastrados.")
+        return None, None
 
-                print("\nAlunos disponíveis:")
-                for aluno in alunos:
-                    print(f"ID: {aluno[0]} | Nome: {aluno[1]}")
+    id_aluno = ler_texto("\nID do aluno", id_aluno_atual)
+    id_instrutor = ler_texto("ID do instrutor", id_instrutor_atual)
 
-                print("\nInstrutores disponíveis:")
-                for instrutor in instrutores:
-                    print(f"ID: {instrutor[0]} | Nome: {instrutor[1]}")
+    # Verifica se o aluno e o instrutor existem antes de gravar
+    if not id_aluno.isdigit() or aluno_controller.obter(int(id_aluno)) is None:
+        print("\nAluno não encontrado.")
+        return None, None
+    if not id_instrutor.isdigit() or instrutor_controller.obter(int(id_instrutor)) is None:
+        print("\nInstrutor não encontrado.")
+        return None, None
 
-                id_aluno = input("\nID do aluno: ").strip()
-                id_instrutor = input("ID do instrutor: ").strip()
-                nome_treino = input("Nome do treino: ").strip()
-                objetivo = input("Objetivo do treino (opcional): ").strip()
+    return int(id_aluno), int(id_instrutor)
 
-                if treino_controller.inserir(
-                    id_aluno, id_instrutor, nome_treino, objetivo
-                ):
-                    print("Treino cadastrado com sucesso!")
-                else:
-                    print("Não foi possível cadastrar o treino.")
 
-            elif opcao == "3":
-                print("\n--- ATUALIZAR TREINO ---")
+def inserir():
+    print("\n================ CADASTRAR TREINO ================")
 
-                id_treino = input("ID do treino: ").strip()
-                treino = treino_controller.buscar_por_id(id_treino)
+    id_aluno, id_instrutor = _escolher_aluno_e_instrutor()
+    if id_aluno is None:
+        return
 
-                if not treino:
-                    print("Treino não encontrado.")
-                    continue
+    nome_treino = ler_texto("Nome do treino")
+    objetivo = ler_texto("Objetivo do treino")
 
-                alunos = aluno_controller.listar()
-                instrutores = instrutor_controller.listar()
+    novo_id = controller.inserir(id_aluno, id_instrutor, nome_treino, objetivo)
 
-                print("\nAlunos disponíveis:")
-                for aluno in alunos:
-                    print(f"ID: {aluno[0]} | Nome: {aluno[1]}")
+    print("\nTreino cadastrado com sucesso!")
+    print(controller.obter(novo_id).to_string())
 
-                print("\nInstrutores disponíveis:")
-                for instrutor in instrutores:
-                    print(f"ID: {instrutor[0]} | Nome: {instrutor[1]}")
 
-                print("\nPressione Enter para manter o valor atual.")
+def atualizar():
+    print("\n================ ATUALIZAR TREINO ================")
 
-                id_aluno = input(f"ID do aluno [{treino[1]}]: ").strip()
-                id_instrutor = input(f"ID do instrutor [{treino[2]}]: ").strip()
-                nome = input(f"Nome [{treino[3]}]: ").strip()
-                objetivo = input(f"Objetivo [{treino[4] or ''}]: ").strip()
+    if not listar():
+        return
 
-                id_aluno = id_aluno or treino[1]
-                id_instrutor = id_instrutor or treino[2]
-                nome = nome or treino[3]
-                objetivo = objetivo or (treino[4] or "")
+    id_treino = ler_id("\nID do treino que deseja atualizar: ")
+    if id_treino is None:
+        return
 
-                if treino_controller.atualizar(
-                    id_treino, id_aluno, id_instrutor, nome, objetivo
-                ):
-                    print("Treino atualizado com sucesso!")
-                else:
-                    print("Nenhuma alteração realizada.")
+    treino = controller.obter(id_treino)
+    if treino is None:
+        print("\nTreino não encontrado.")
+        return
 
-            elif opcao == "4":
-                print("\n--- EXCLUIR TREINO ---")
+    print("\nDados atuais:")
+    print(treino.to_string())
+    print("\nInforme os novos dados (ENTER mantém o valor atual).")
 
-                id_treino = input("ID do treino: ").strip()
-                treino = treino_controller.buscar_por_id(id_treino)
+    id_aluno, id_instrutor = _escolher_aluno_e_instrutor(
+        treino.get_aluno().get_id_aluno(),
+        treino.get_instrutor().get_id_instrutor()
+    )
+    if id_aluno is None:
+        return
 
-                if not treino:
-                    print("Treino não encontrado.")
-                    continue
+    nome_treino = ler_texto("Nome do treino", treino.get_nome_treino())
+    objetivo = ler_texto("Objetivo", treino.get_objetivo() or "")
 
-                print(f"Treino: {treino[3]}")
-                confirmacao = input(
-                    "Tem certeza de que deseja excluir? (s/n): "
-                ).strip().lower()
+    controller.atualizar(id_treino, id_aluno, id_instrutor, nome_treino, objetivo)
 
-                if confirmacao == "s":
-                    if treino_controller.deletar(id_treino):
-                        print("Treino excluído com sucesso!")
-                    else:
-                        print("Não foi possível excluir o treino.")
-                else:
-                    print("Exclusão cancelada.")
+    # Exibe o registro atualizado (edital 6.d.7)
+    print("\nTreino atualizado com sucesso! Registro atualizado:")
+    print(controller.obter(id_treino).to_string())
 
-            elif opcao == "5":
-                print("\n--- TREINOS POR ALUNO ---")
 
-                alunos = aluno_controller.listar()
+def excluir():
+    print("\n================= EXCLUIR TREINO =================")
 
-                if not alunos:
-                    print("Nenhum aluno cadastrado.")
-                    continue
+    if not listar():
+        return
 
-                for aluno in alunos:
-                    print(f"ID: {aluno[0]} | Nome: {aluno[1]}")
+    id_treino = ler_id("\nID do treino que deseja excluir: ")
+    if id_treino is None:
+        return
 
-                id_aluno = input("\nInforme o ID do aluno: ").strip()
-                treinos = treino_controller.listar_por_aluno(id_aluno)
+    treino = controller.obter(id_treino)
+    if treino is None:
+        print("\nTreino não encontrado.")
+        return
 
-                if not treinos:
-                    print("Esse aluno não possui treinos cadastrados.")
-                else:
-                    for treino in treinos:
-                        print(
-                            f"ID: {treino[0]} | "
-                            f"Instrutor: {treino[1]} | "
-                            f"Treino: {treino[2]} | "
-                            f"Objetivo: {treino[3] or '-'} | "
-                            f"Data de criação: {treino[4]}"
-                        )
+    print("\nTreino selecionado:")
+    print(treino.to_string())
 
-            elif opcao == "0":
-                print("Voltando ao menu principal...")
-                break
+    if not confirmar("\nTem certeza de que deseja excluir este treino? (s/n): "):
+        print("\nExclusão cancelada. Voltando ao menu principal.")
+        return False
 
-            else:
-                print("Opção inválida. Tente novamente.")
-
-        except ValueError as erro:
-            print(f"Dados inválidos: {erro}")
-
-        except Exception as erro:
-            mensagem = str(erro)
-
-            if "ORA-02291" in mensagem:
-                print(
-                    "Não foi possível salvar: o aluno ou instrutor informado "
-                    "não existe no banco."
-                )
-            elif "ORA-02292" in mensagem:
-                print(
-                    "Não foi possível excluir: existem registros associados "
-                    "a esse treino."
-                )
-            else:
-                print(f"Não foi possível realizar a operação: {erro}")
+    # TREINO nao e chave estrangeira em nenhuma outra tabela
+    controller.deletar(id_treino)
+    print("\nTreino excluído com sucesso!")

@@ -1,180 +1,136 @@
-from controller.controller_frequencia import ControllerFrequencia
 from controller.controller_aluno import ControllerAluno
+from controller.controller_frequencia import ControllerFrequencia
+from utils import menu_alunos
+from utils.config import confirmar, ler_id, ler_texto
+
+controller = ControllerFrequencia()
+aluno_controller = ControllerAluno()
 
 
-def menu_frequencias():
-    frequencia_controller = ControllerFrequencia()
-    aluno_controller = ControllerAluno()
+def listar() -> bool:
+    """Lista as frequências (PK + campos descritivos). Devolve False se não houver."""
+    frequencias = controller.listar()
 
-    while True:
-        print("\n" + "=" * 40)
-        print("       GERENCIAMENTO DE FREQUÊNCIAS")
-        print("=" * 40)
-        print("1 - Listar frequências")
-        print("2 - Registrar entrada")
-        print("3 - Atualizar frequência")
-        print("4 - Excluir frequência")
-        print("5 - Listar frequências por aluno")
-        print("0 - Voltar ao menu principal")
-        print("=" * 40)
+    print("\n-------------- FREQUÊNCIAS REGISTRADAS --------------")
+    if not frequencias:
+        print("Nenhuma frequência registrada.")
+        return False
 
-        opcao = input("Escolha uma opção: ").strip()
+    for frequencia in frequencias:
+        print(
+            f"ID: {frequencia[0]:<4} | Aluno: {frequencia[1]:<22} | "
+            f"Entrada: {frequencia[2]:%d/%m/%Y %H:%M}"
+        )
+    return True
 
-        try:
-            if opcao == "1":
-                frequencias = frequencia_controller.listar()
 
-                print("\n--- LISTA DE FREQUÊNCIAS ---")
+def listar_por_aluno():
+    """Mostra as frequências de um aluno escolhido."""
+    if not menu_alunos.listar():
+        return
 
-                if not frequencias:
-                    print("Nenhuma frequência registrada.")
-                else:
-                    for frequencia in frequencias:
-                        print(
-                            f"ID: {frequencia[0]} | "
-                            f"Aluno: {frequencia[1]} | "
-                            f"Data e hora: {frequencia[2]}"
-                        )
+    id_aluno = ler_id("\nID do aluno: ")
+    if id_aluno is None:
+        return
 
-            elif opcao == "2":
-                print("\n--- REGISTRAR ENTRADA ---")
+    frequencias = controller.listar_por_aluno(id_aluno)
+    print("\n------------- FREQUÊNCIAS DO ALUNO -------------")
+    if not frequencias:
+        print("Nenhuma frequência encontrada para esse aluno.")
+        return
 
-                alunos = aluno_controller.listar()
+    for frequencia in frequencias:
+        print(f"ID: {frequencia[0]} | Entrada: {frequencia[1]:%d/%m/%Y %H:%M}")
 
-                if not alunos:
-                    print("Não há alunos cadastrados.")
-                    continue
 
-                print("Alunos disponíveis:")
-                for aluno in alunos:
-                    print(f"ID: {aluno[0]} | Nome: {aluno[1]}")
+def _escolher_aluno(id_aluno_atual=None):
+    """Mostra os alunos e devolve o ID escolhido (ou None)."""
+    if not menu_alunos.listar():
+        print("\nÉ preciso ter alunos cadastrados.")
+        return None
 
-                id_aluno = input("\nID do aluno: ").strip()
+    id_aluno = ler_texto("\nID do aluno", id_aluno_atual)
 
-                usar_data = input(
-                    "Informar data/hora manualmente? (s/n): "
-                ).strip().lower()
+    # Verifica se o aluno existe antes de gravar
+    if not id_aluno.isdigit() or aluno_controller.obter(int(id_aluno)) is None:
+        print("\nAluno não encontrado.")
+        return None
 
-                if usar_data == "s":
-                    data_hora = input(
-                        "Data e hora (AAAA-MM-DD HH:MM ou "
-                        "AAAA-MM-DD HH:MM:SS): "
-                    ).strip()
+    return int(id_aluno)
 
-                    sucesso = frequencia_controller.registrar_entrada(
-                        id_aluno, data_hora
-                    )
-                else:
-                    sucesso = frequencia_controller.registrar_entrada(
-                        id_aluno
-                    )
 
-                if sucesso:
-                    print("Entrada registrada com sucesso!")
-                else:
-                    print("Não foi possível registrar a entrada.")
+def inserir():
+    print("\n============== REGISTRAR FREQUÊNCIA ==============")
 
-            elif opcao == "3":
-                print("\n--- ATUALIZAR FREQUÊNCIA ---")
+    id_aluno = _escolher_aluno()
+    if id_aluno is None:
+        return
 
-                id_frequencia = input("ID da frequência: ").strip()
-                frequencia = frequencia_controller.buscar_por_id(
-                    id_frequencia
-                )
+    data_hora = ler_texto(
+        "Data e hora da entrada (AAAA-MM-DD HH:MM, ENTER = agora)"
+    )
 
-                if not frequencia:
-                    print("Frequência não encontrada.")
-                    continue
+    novo_id = controller.registrar_entrada(id_aluno, data_hora or None)
 
-                alunos = aluno_controller.listar()
+    print("\nFrequência registrada com sucesso!")
+    print(controller.obter(novo_id).to_string())
 
-                print("\nAlunos disponíveis:")
-                for aluno in alunos:
-                    print(f"ID: {aluno[0]} | Nome: {aluno[1]}")
 
-                id_aluno = input(
-                    f"ID do aluno [{frequencia[1]}]: "
-                ).strip() or frequencia[1]
+def atualizar():
+    print("\n============== ATUALIZAR FREQUÊNCIA ==============")
 
-                data_atual = frequencia[2].strftime("%Y-%m-%d %H:%M:%S")
-                data_hora = input(
-                    f"Data/hora [{data_atual}]: "
-                ).strip() or data_atual
+    if not listar():
+        return
 
-                if frequencia_controller.atualizar(
-                    id_frequencia, id_aluno, data_hora
-                ):
-                    print("Frequência atualizada com sucesso!")
-                else:
-                    print("Nenhuma alteração realizada.")
+    id_frequencia = ler_id("\nID da frequência que deseja atualizar: ")
+    if id_frequencia is None:
+        return
 
-            elif opcao == "4":
-                print("\n--- EXCLUIR FREQUÊNCIA ---")
+    frequencia = controller.obter(id_frequencia)
+    if frequencia is None:
+        print("\nFrequência não encontrada.")
+        return
 
-                id_frequencia = input("ID da frequência: ").strip()
-                frequencia = frequencia_controller.buscar_por_id(
-                    id_frequencia
-                )
+    print("\nDados atuais:")
+    print(frequencia.to_string())
+    print("\nInforme os novos dados (ENTER mantém o valor atual).")
 
-                if not frequencia:
-                    print("Frequência não encontrada.")
-                    continue
+    id_aluno = _escolher_aluno(frequencia.get_aluno().get_id_aluno())
+    if id_aluno is None:
+        return
 
-                confirmacao = input(
-                    "Confirma a exclusão? (s/n): "
-                ).strip().lower()
+    data_atual = frequencia.get_data_hora_entrada().strftime("%Y-%m-%d %H:%M")
+    data_hora = ler_texto("Data e hora da entrada (AAAA-MM-DD HH:MM)", data_atual)
 
-                if confirmacao == "s":
-                    if frequencia_controller.deletar(id_frequencia):
-                        print("Frequência excluída com sucesso!")
-                    else:
-                        print("Não foi possível excluir a frequência.")
-                else:
-                    print("Exclusão cancelada.")
+    controller.atualizar(id_frequencia, id_aluno, data_hora)
 
-            elif opcao == "5":
-                print("\n--- FREQUÊNCIAS POR ALUNO ---")
+    # Exibe o registro atualizado (edital 6.d.7)
+    print("\nFrequência atualizada com sucesso! Registro atualizado:")
+    print(controller.obter(id_frequencia).to_string())
 
-                alunos = aluno_controller.listar()
 
-                if not alunos:
-                    print("Nenhum aluno cadastrado.")
-                    continue
+def excluir():
+    print("\n=============== EXCLUIR FREQUÊNCIA ===============")
 
-                for aluno in alunos:
-                    print(f"ID: {aluno[0]} | Nome: {aluno[1]}")
+    if not listar():
+        return
 
-                id_aluno = input("\nID do aluno: ").strip()
-                frequencias = frequencia_controller.listar_por_aluno(
-                    id_aluno
-                )
+    id_frequencia = ler_id("\nID da frequência que deseja excluir: ")
+    if id_frequencia is None:
+        return
 
-                if not frequencias:
-                    print("Nenhuma frequência encontrada para esse aluno.")
-                else:
-                    for frequencia in frequencias:
-                        print(
-                            f"ID: {frequencia[0]} | "
-                            f"Data e hora: {frequencia[1]}"
-                        )
+    frequencia = controller.obter(id_frequencia)
+    if frequencia is None:
+        print("\nFrequência não encontrada.")
+        return
 
-            elif opcao == "0":
-                print("Voltando ao menu principal...")
-                break
+    print("\nFrequência selecionada:")
+    print(frequencia.to_string())
 
-            else:
-                print("Opção inválida. Tente novamente.")
+    if not confirmar("\nTem certeza de que deseja excluir esta frequência? (s/n): "):
+        print("\nExclusão cancelada. Voltando ao menu principal.")
+        return False
 
-        except ValueError as erro:
-            print(f"Dados inválidos: {erro}")
-
-        except Exception as erro:
-            mensagem = str(erro)
-
-            if "ORA-02291" in mensagem:
-                print(
-                    "Não foi possível salvar: o aluno informado "
-                    "não existe no banco."
-                )
-            else:
-                print(f"Não foi possível realizar a operação: {erro}")
+    # FREQUENCIA nao e chave estrangeira em nenhuma outra tabela
+    controller.deletar(id_frequencia)
+    print("\nFrequência excluída com sucesso!")
