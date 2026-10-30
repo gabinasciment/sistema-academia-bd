@@ -10,6 +10,7 @@
 # - self.cur e self.conn comecam como None.
 # - connect() tenta o SID (XE) e, se falhar, o service name (XEPDB1).
 # - close() fecha o cursor e a conexao com seguranca.
+# - O endereco do servidor pode vir da variavel de ambiente ORACLE_HOST.
 ###########################################################################
 
 import json
@@ -33,7 +34,10 @@ class OracleQueries:
 
     def __init__(self, can_write: bool = False):
         self.can_write = can_write
-        self.host = "localhost"
+        # Na VM da disciplina o Oracle roda na propria maquina (localhost).
+        # Para acessar um Oracle em outra maquina, defina a variavel de
+        # ambiente ORACLE_HOST com o IP dela, sem precisar alterar o codigo.
+        self.host = os.environ.get("ORACLE_HOST", "localhost")
         self.port = 1521
         self.service_name = "XEPDB1"
         self.sid = "XE"
