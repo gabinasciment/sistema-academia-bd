@@ -64,7 +64,6 @@ Usei a ferramenta como apoio para estudar os conceitos (chaves, restrições e s
 A resposta explicou o que o edital exige no README e propôs uma estrutura e um texto para cada seção. Usei como base, revisei as instruções, conferi os comandos e os resultados esperados com os testes que fiz no Oracle e deixei a seção de execução do sistema para a Laysa completar com os menus.
 
 ## Prompt 4 — Desenvolvimento das classes Aluno e Treino
-
 **Prompt utilizado:**
 
 "Ajude-me a desenvolver as classes Python Aluno e Treino para um sistema de academia com banco de dados Oracle, seguindo o diagrama relacional e o edital da disciplina. Inclua construtores, getters, setters, método to_string e relacionamentos entre objetos."
