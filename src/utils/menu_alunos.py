@@ -172,10 +172,21 @@ def menu_alunos():
                         else:
                             print("\nExclusao cancelada.")
 
+         
             except ValueError as erro:
                 print(f"\nID invalido: {erro}")
+
             except Exception as erro:
-                print(f"\nErro ao excluir aluno: {erro}")
+                mensagem = str(erro)
+
+                if "ORA-02292" in mensagem:
+                    print("\nNao foi possivel excluir o aluno.")
+                    print("Este aluno possui treinos ou frequencias associados.")
+                    print("Exclua primeiro os registros relacionados ou")
+                    print("escolha outro aluno para realizar a exclusao.")
+                else:
+                    print(f"\nErro ao excluir aluno: {erro}")
+
 
             input("\nPressione ENTER para continuar...")
 
