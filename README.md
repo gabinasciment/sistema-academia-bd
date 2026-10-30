@@ -17,84 +17,57 @@ Desenvolver uma aplicação integrada a um banco de dados relacional Oracle para
 
 ## Funcionalidades
 
-### 1. Menu principal
+### 1. Tela inicial (*Splash Screen*)
 
-A aplicação apresenta uma tela inicial (*Splash Screen*) e um menu principal com as seguintes opções:
+Ao iniciar, o sistema exibe o nome da aplicação, a disciplina, o professor, o semestre, os integrantes do grupo e a quantidade de registros de cada tabela, obtida com a consulta `select count(1) as total_{tabela} from {tabela}`.
 
-1. Gerenciar alunos.
-2. Gerenciar instrutores.
-3. Gerenciar treinos.
-4. Gerenciar frequências.
-5. Consultar relatórios.
-0. Sair do sistema.
+### 2. Menu principal
 
-### 2. Gerenciamento de alunos
+```text
+1 - Relatórios
+2 - Inserir registros
+3 - Remover registros
+4 - Atualizar registros
+5 - Sair
+```
 
-Permite realizar as seguintes operações:
+Nas opções 2, 3 e 4 o sistema exibe o menu de entidades (**Alunos, Instrutores, Treinos e Frequências**) para o usuário escolher em qual tabela deseja trabalhar. O menu principal volta a ser exibido ao final de cada operação.
 
-- Listar os alunos cadastrados.
-- Cadastrar novos alunos.
-- Consultar um aluno pelo identificador.
-- Atualizar os dados de um aluno.
-- Excluir um aluno.
-- Voltar ao menu principal.
+### 3. Inserir registros
 
-Os dados dos alunos incluem nome, e-mail, telefone, data de nascimento e gênero.
+1. Escolha a entidade.
+2. Informe cada atributo solicitado. Antes de gravar, o sistema verifica se o registro já existe (e-mail repetido de aluno ou instrutor, aluno e instrutor inexistentes no treino ou na frequência).
+3. O registro é inserido e exibido na tela.
+4. O sistema pergunta se deseja inserir mais algum registro: **Sim** continua na mesma entidade; **Não** volta ao menu principal.
 
-### 3. Gerenciamento de instrutores
+### 4. Remover registros
 
-Permite:
+1. Escolha a entidade.
+2. O sistema lista os registros (ID e campos descritivos).
+3. Informe o ID do registro e confirme a exclusão. Se responder **Não**, volta ao menu principal.
+4. Se o registro for chave estrangeira em outra tabela (aluno com treinos ou frequências, instrutor com treinos), o sistema informa quantos registros relacionados existem e pergunta se deseja excluí-los também. Se a resposta for **Não**, o registro não é excluído.
+5. O sistema pergunta se deseja excluir mais algum registro.
 
-- Listar os instrutores cadastrados.
-- Cadastrar novos instrutores.
-- Consultar um instrutor pelo identificador.
-- Atualizar os dados de um instrutor.
-- Excluir um instrutor.
-- Voltar ao menu principal.
+### 5. Atualizar registros
 
-Os dados dos instrutores incluem nome, e-mail e telefone.
-
-A exclusão de registros pode ser impedida quando existem relacionamentos com outros registros do banco de dados, conforme as restrições de integridade referencial.
-
-### 4. Gerenciamento de treinos
-
-Permite:
-
-- Listar os treinos cadastrados.
-- Cadastrar novos treinos.
-- Consultar um treino pelo identificador.
-- Atualizar os dados de um treino.
-- Excluir um treino.
-- Listar os treinos de um aluno.
-- Voltar ao menu principal.
-
-Cada treino está associado a um aluno e a um instrutor. Os dados incluem nome do treino, objetivo e data de criação.
-
-### 5. Gerenciamento de frequências
-
-Permite:
-
-- Listar os registros de frequência.
-- Registrar uma nova frequência.
-- Consultar uma frequência pelo identificador.
-- Atualizar um registro de frequência.
-- Excluir um registro de frequência.
-- Listar as frequências de um aluno.
-- Voltar ao menu principal.
-
-Cada registro de frequência está associado a um aluno e contém a data e a hora de entrada na academia.
+1. Escolha a entidade.
+2. O sistema lista os registros (ID e campos descritivos).
+3. Informe o ID do registro. O sistema mostra os dados atuais e pede todos os atributos, exceto a chave primária (ENTER mantém o valor atual).
+4. O registro é atualizado e exibido com os novos dados.
+5. O sistema pergunta se deseja atualizar mais algum registro.
 
 ### 6. Relatórios
 
-O sistema disponibiliza dois relatórios:
+```text
+1 - Quantidade de treinos por aluno (agrupamento)
+2 - Treinos com alunos e instrutores (junção)
+3 - Treinos de um aluno
+4 - Frequências de um aluno
+0 - Voltar ao menu principal
+```
 
-**Relatório de treinos por aluno**
-
-Apresenta os alunos e a quantidade de treinos associados a cada um.
-
-**Relatório de treinos com instrutores**
-
-Apresenta informações sobre os treinos, os alunos relacionados e os instrutores responsáveis.
+- **Quantidade de treinos por aluno:** usa `COUNT` e `GROUP BY` (sumarização).
+- **Treinos com alunos e instrutores:** usa `INNER JOIN` entre TREINO, ALUNO e INSTRUTOR (junção).
 
 ## Estrutura do projeto
 
@@ -108,6 +81,11 @@ sistema-academia-bd/
 │   │   ├── passphrase/
 │   │   │   └── authentication.oracle
 │   │   └── oracle_queries.py
+│   ├── model/
+│   │   ├── aluno.py
+│   │   ├── instrutor.py
+│   │   ├── treino.py
+│   │   └── frequencia.py
 │   ├── controller/
 │   │   ├── controller_aluno.py
 │   │   ├── controller_instrutor.py
@@ -119,7 +97,7 @@ sistema-academia-bd/
 │   │   ├── relatorio_treinos_por_aluno.sql
 │   │   └── relatorio_treinos_com_instrutores.sql
 │   ├── utils/
-│   │   ├── menu.py
+│   │   ├── config.py
 │   │   ├── menu_alunos.py
 │   │   ├── menu_instrutores.py
 │   │   ├── menu_treinos.py
@@ -166,7 +144,16 @@ A configuração da conexão deve corresponder ao ambiente Oracle utilizado pelo
 - Serviço ou identificador do banco de dados.
 - Usuário e senha válidos.
 
-O endereço do servidor pode variar conforme a rede e o ambiente disponibilizado pelo professor. Caso a aplicação não consiga se conectar, confira as configurações e verifique se o banco Oracle está em execução e acessível.
+Por padrão, o sistema se conecta ao Oracle em `localhost`, porta `1521`, primeiro pelo SID `XE` e, se não conseguir, pelo serviço `XEPDB1`. Esse é o cenário da VM da disciplina, em que o Oracle roda na mesma máquina que o programa.
+
+Se o Oracle estiver em outra máquina (por exemplo, rodar o programa no seu computador acessando o Oracle da VM), informe o IP dela na variável de ambiente `ORACLE_HOST`, sem alterar o código:
+
+```bash
+export ORACLE_HOST=192.168.0.10   # IP da maquina onde o Oracle esta
+python3 principal.py
+```
+
+Se aparecer o erro `ORA-12541: TNS:no listener`, o programa não encontrou o Oracle no endereço configurado: verifique se o banco está ligado e se o `ORACLE_HOST` está correto.
 
 **Importante:** não publique senhas reais ou outras credenciais de acesso no repositório.
 
