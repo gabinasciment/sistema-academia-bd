@@ -55,11 +55,14 @@ class Treino:
 
     # Exibir informacoes do treino
     def to_string(self):
+        data_criacao = self.data_criacao
+        if hasattr(data_criacao, "strftime"):
+            data_criacao = data_criacao.strftime("%d/%m/%Y")
         return (
             f"ID: {self.id_treino} | "
             f"Aluno: {self.aluno.get_nome_aluno()} | "
             f"Instrutor: {self.instrutor.get_nome_instrutor()} | "
             f"Treino: {self.nome_treino} | "
-            f"Objetivo: {self.objetivo} | "
-            f"Data de criacao: {self.data_criacao}"
+            f"Objetivo: {self.objetivo or '-'} | "
+            f"Data de criacao: {data_criacao}"
         )

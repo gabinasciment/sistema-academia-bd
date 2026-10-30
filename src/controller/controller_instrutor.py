@@ -1,4 +1,5 @@
 from conexion.oracle_queries import OracleQueries
+from model.instrutor import Instrutor
 
 
 class ControllerInstrutor:
@@ -51,7 +52,10 @@ class ControllerInstrutor:
             """
 
             oracle.write(query)
-            return cursor.rowcount > 0
+
+            # Mesma sessao: CURRVAL devolve o ID que acabou de ser gerado
+            cursor.execute("SELECT INSTRUTOR_ID_INSTRUTOR_SEQ.CURRVAL FROM DUAL")
+            return cursor.fetchone()[0]
 
         finally:
             oracle.close()
@@ -146,6 +150,66 @@ class ControllerInstrutor:
 
             cursor.execute(query)
             return cursor.fetchall()
+
+        finally:
+            oracle.close()
+
+    def obter(self, id_instrutor):
+        """Busca o instrutor pelo ID e devolve um objeto Instrutor (ou None)."""
+        linha = self.buscar_por_id(id_instrutor)
+        if not linha:
+            return None
+        return Instrutor(linha[0], linha[1], linha[2], linha[3])
+
+    def existe_email(self, email, ignorar_id=None) -> bool:
+        """Verifica se ja existe instrutor com o e-mail."""
+        oracle = OracleQueries()
+
+        try:
+            cursor = oracle.connect()
+
+            query = (
+                "SELECT COUNT(1) FROM INSTRUTOR "
+                "WHERE LOWER(EMAIL_INSTRUTOR) = LOWER('" + self._escapar(email) + "')"
+            )
+            if ignorar_id is not None:
+                query += " AND ID_INSTRUTOR <> " + str(int(ignorar_id))
+
+            cursor.execute(query)
+            return cursor.fetchone()[0] > 0
+
+        finally:
+            oracle.close()
+
+    def contar_treinos(self, id_instrutor) -> int:
+        """Conta os treinos orientados pelo instrutor (registros filhos)."""
+        oracle = OracleQueries()
+
+        try:
+            cursor = oracle.connect()
+            cursor.execute(
+                "SELECT COUNT(1) FROM TREINO WHERE ID_INSTRUTOR = "
+                + str(int(id_instrutor))
+            )
+            return cursor.fetchone()[0]
+
+        finally:
+            oracle.close()
+
+    def deletar_com_treinos(self, id_instrutor) -> bool:
+        """Exclui os treinos do instrutor e depois o instrutor,
+        numa unica transacao."""
+        oracle = OracleQueries(can_write=True)
+
+        try:
+            cursor = oracle.connect()
+            id_instrutor = str(int(id_instrutor))
+
+            cursor.execute("DELETE FROM TREINO WHERE ID_INSTRUTOR = " + id_instrutor)
+            cursor.execute("DELETE FROM INSTRUTOR WHERE ID_INSTRUTOR = " + id_instrutor)
+            excluiu = cursor.rowcount > 0
+            oracle.conn.commit()
+            return excluiu
 
         finally:
             oracle.close()

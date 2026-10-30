@@ -1,6 +1,7 @@
 from datetime import datetime
 
 from conexion.oracle_queries import OracleQueries
+from model.aluno import Aluno
 
 
 class ControllerAluno:
@@ -64,7 +65,10 @@ class ControllerAluno:
             """
 
             oracle.write(query)
-            return cursor.rowcount > 0
+
+            # Mesma sessao: CURRVAL devolve o ID que acabou de ser gerado
+            cursor.execute("SELECT ALUNO_ID_ALUNO_SEQ.CURRVAL FROM DUAL")
+            return cursor.fetchone()[0]
 
         finally:
             oracle.close()
@@ -152,6 +156,74 @@ class ControllerAluno:
 
             cursor.execute(query)
             return cursor.fetchall()
+
+        finally:
+            oracle.close()
+
+    def obter(self, id_aluno):
+        """Busca o aluno pelo ID e devolve um objeto Aluno (ou None)."""
+        linha = self.buscar_por_id(id_aluno)
+        if not linha:
+            return None
+        return Aluno(linha[0], linha[1], linha[2], linha[3], linha[4], linha[5])
+
+    def existe_email(self, email, ignorar_id=None) -> bool:
+        """Verifica se ja existe aluno com o e-mail (antes de inserir/atualizar)."""
+        oracle = OracleQueries()
+
+        try:
+            cursor = oracle.connect()
+
+            query = (
+                "SELECT COUNT(1) FROM ALUNO "
+                "WHERE LOWER(EMAIL_ALUNO) = LOWER('" + self._escapar(email) + "')"
+            )
+            if ignorar_id is not None:
+                query += " AND ID_ALUNO <> " + str(int(ignorar_id))
+
+            cursor.execute(query)
+            return cursor.fetchone()[0] > 0
+
+        finally:
+            oracle.close()
+
+    def contar_dependentes(self, id_aluno):
+        """Conta os registros filhos do aluno: (treinos, frequencias)."""
+        oracle = OracleQueries()
+
+        try:
+            cursor = oracle.connect()
+
+            cursor.execute(
+                "SELECT COUNT(1) FROM TREINO WHERE ID_ALUNO = " + str(int(id_aluno))
+            )
+            treinos = cursor.fetchone()[0]
+
+            cursor.execute(
+                "SELECT COUNT(1) FROM FREQUENCIA WHERE ID_ALUNO = " + str(int(id_aluno))
+            )
+            frequencias = cursor.fetchone()[0]
+
+            return treinos, frequencias
+
+        finally:
+            oracle.close()
+
+    def deletar_com_dependentes(self, id_aluno) -> bool:
+        """Exclui os treinos e frequencias do aluno e depois o aluno,
+        numa unica transacao (se algo falhar, nada e apagado)."""
+        oracle = OracleQueries(can_write=True)
+
+        try:
+            cursor = oracle.connect()
+            id_aluno = str(int(id_aluno))
+
+            cursor.execute("DELETE FROM TREINO WHERE ID_ALUNO = " + id_aluno)
+            cursor.execute("DELETE FROM FREQUENCIA WHERE ID_ALUNO = " + id_aluno)
+            cursor.execute("DELETE FROM ALUNO WHERE ID_ALUNO = " + id_aluno)
+            excluiu = cursor.rowcount > 0
+            oracle.conn.commit()
+            return excluiu
 
         finally:
             oracle.close()

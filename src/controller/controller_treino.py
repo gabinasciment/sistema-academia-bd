@@ -1,6 +1,9 @@
 from datetime import datetime
 
 from conexion.oracle_queries import OracleQueries
+from controller.controller_aluno import ControllerAluno
+from controller.controller_instrutor import ControllerInstrutor
+from model.treino import Treino
 
 
 class ControllerTreino:
@@ -13,9 +16,11 @@ class ControllerTreino:
         return str(texto).strip().replace("'", "''")
 
     @staticmethod
-    def _validar(nome_treino):
+    def _validar(nome_treino, objetivo):
         if not nome_treino or not nome_treino.strip():
             raise ValueError("O nome do treino é obrigatório.")
+        if not objetivo or not objetivo.strip():
+            raise ValueError("O objetivo do treino é obrigatório.")
 
     @staticmethod
     def _converter_data(data):
@@ -26,7 +31,7 @@ class ControllerTreino:
 
     def inserir(self, id_aluno, id_instrutor, nome_treino, objetivo=""):
         """Cadastra um treino. A data de criação é preenchida pelo Oracle."""
-        self._validar(nome_treino)
+        self._validar(nome_treino, objetivo)
 
         oracle = OracleQueries(can_write=True)
         try:
@@ -52,7 +57,10 @@ class ControllerTreino:
             """
 
             oracle.write(query)
-            return cursor.rowcount > 0
+
+            # Mesma sessao: CURRVAL devolve o ID que acabou de ser gerado
+            cursor.execute("SELECT TREINO_ID_TREINO_SEQ.CURRVAL FROM DUAL")
+            return cursor.fetchone()[0]
         finally:
             oracle.close()
 
@@ -60,7 +68,7 @@ class ControllerTreino:
         self, id_treino, id_aluno, id_instrutor, nome_treino, objetivo=""
     ):
         """Atualiza os dados de um treino existente."""
-        self._validar(nome_treino)
+        self._validar(nome_treino, objetivo)
 
         oracle = OracleQueries(can_write=True)
         try:
@@ -140,6 +148,16 @@ class ControllerTreino:
             return cursor.fetchall()
         finally:
             oracle.close()
+
+    def obter(self, id_treino):
+        """Busca o treino pelo ID e devolve um objeto Treino com os objetos
+        Aluno e Instrutor associados (ou None)."""
+        linha = self.buscar_por_id(id_treino)
+        if not linha:
+            return None
+        aluno = ControllerAluno().obter(linha[1])
+        instrutor = ControllerInstrutor().obter(linha[2])
+        return Treino(linha[0], aluno, instrutor, linha[3], linha[4], linha[5])
 
     def listar_por_aluno(self, id_aluno):
         """Lista os treinos associados a um aluno."""

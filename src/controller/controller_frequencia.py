@@ -1,6 +1,8 @@
 from datetime import datetime
 
 from conexion.oracle_queries import OracleQueries
+from controller.controller_aluno import ControllerAluno
+from model.frequencia import Frequencia
 
 
 class ControllerFrequencia:
@@ -51,7 +53,10 @@ class ControllerFrequencia:
             """
 
             oracle.write(query)
-            return cursor.rowcount > 0
+
+            # Mesma sessao: CURRVAL devolve o ID que acabou de ser gerado
+            cursor.execute("SELECT FREQUENCIA_ID_FREQUENCIA_SEQ.CURRVAL FROM DUAL")
+            return cursor.fetchone()[0]
 
         finally:
             oracle.close()
@@ -132,6 +137,15 @@ class ControllerFrequencia:
 
         finally:
             oracle.close()
+
+    def obter(self, id_frequencia):
+        """Busca a frequencia pelo ID e devolve um objeto Frequencia com o
+        objeto Aluno associado (ou None)."""
+        linha = self.buscar_por_id(id_frequencia)
+        if not linha:
+            return None
+        aluno = ControllerAluno().obter(linha[1])
+        return Frequencia(linha[0], aluno, linha[2])
 
     def listar_por_aluno(self, id_aluno):
         oracle = OracleQueries()

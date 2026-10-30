@@ -49,11 +49,14 @@ class Aluno:
 
     # Exibir as informacoes do aluno
     def to_string(self):
+        nascimento = self.data_nascimento
+        if hasattr(nascimento, "strftime"):
+            nascimento = nascimento.strftime("%d/%m/%Y")
         return (
             f"ID: {self.id_aluno} | "
             f"Nome: {self.nome_aluno} | "
             f"Email: {self.email_aluno} | "
             f"Telefone: {self.telefone_aluno} | "
-            f"Nascimento: {self.data_nascimento} | "
+            f"Nascimento: {nascimento} | "
             f"Genero: {self.genero}"
         )
