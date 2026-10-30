@@ -83,3 +83,22 @@ As classes foram testadas na máquina virtual Linux utilizando Python 3, verific
 **Fonte:** ChatGPT (OpenAI).
 
 Com o apoio da ferramenta, foi possível compreender melhor a organização do código e a integração entre os menus, os controladores e o banco de dados Oracle. A partir das orientações, participei da implementação e dos ajustes do menu principal, da tela inicial (*Splash Screen*) e da navegação entre os menus de alunos, instrutores, treinos, frequências e relatórios. Também realizei testes de execução do sistema, verificando as operações disponíveis e a comunicação com o banco de dados, além de corrigir problemas encontrados durante os testes.
+
+## Prompt 6 — Correção da execução e revisão do sistema conforme o edital (Esther)
+
+"Sobre o repositório do trabalho de Banco de Dados, analise as falhas e divergências que alguns integrantes do grupo relataram e me ajude a identificar o que pode ter ocorrido para que eu consiga resolver."
+
+Em seguida, enviei a mensagem do Caio (erro `ORA-12541: TNS:no listener` ao acessar o Oracle em 192.168.1.4) e autorizei a instalação do que fosse necessário para testar o sistema.
+
+**Fonte:** Claude Code (Anthropic).
+
+A ferramenta instalou o Python 3.10 e um Oracle XE no meu computador para testar o sistema de ponta a ponta. Ela confirmou que o código da versão do GitHub funcionava e que o problema era a conexão: o erro do Caio vinha do endereço fixo 192.168.1.4 (o IP da VM de uma integrante), que já tinha sido trocado para `localhost`. Para quem roda fora da VM, o endereço agora pode ser informado pela variável `ORACLE_HOST`, sem alterar o código.
+
+A revisão também apontou itens do edital que não estavam atendidos. Implementei com auxílio do Claude as correções abaixo, que foram testadas em todos os fluxos (inserir, remover, atualizar e relatórios nas quatro tabelas) no Oracle local. Revisei as alterações antes de enviar ao repositório, conferi o resultado dos testes e o grupo decidiu manter o novo formato do menu:
+
+- menu principal com Relatórios, Inserir, Remover, Atualizar e Sair, seguido do menu de entidades (itens 5.a e 6);
+- listagem dos registros antes de remover ou atualizar, exibição do registro atualizado e pergunta "deseja ... mais algum registro?" (itens 6.b.5, 6.c.3, 6.c.6, 6.d.3, 6.d.7 e 6.d.8);
+- verificação de chave estrangeira antes de excluir aluno ou instrutor, com a opção de excluir também os registros relacionados (item 6.c.5.i);
+- classes Instrutor e Frequencia, usadas pelos controllers para devolver objetos;
+- caminho dos arquivos de relatório corrigido (o programa fechava ao abrir Relatórios fora da pasta `src`);
+- coluna OBJETIVO como NOT NULL no script, igual ao diagrama relacional.
