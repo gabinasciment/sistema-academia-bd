@@ -59,7 +59,7 @@ CREATE TABLE TREINO (
     ID_ALUNO        NUMBER          NOT NULL,   -- FK: todo treino e de um aluno
     ID_INSTRUTOR    NUMBER          NOT NULL,   -- FK: todo treino tem um instrutor
     NOME_TREINO     VARCHAR2(100)   NOT NULL,
-    OBJETIVO        VARCHAR2(200),              -- opcional (sem NOT NULL)
+    OBJETIVO        VARCHAR2(200)   NOT NULL,
     DATA_CRIACAO    DATE            DEFAULT SYSDATE NOT NULL,
     CONSTRAINT TREINO_PK PRIMARY KEY (ID_TREINO)
 );
