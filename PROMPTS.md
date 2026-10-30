@@ -63,7 +63,7 @@ Usei a ferramenta como apoio para estudar os conceitos (chaves, restrições e s
 
 A resposta explicou o que o edital exige no README e propôs uma estrutura e um texto para cada seção. Usei como base, revisei as instruções, conferi os comandos e os resultados esperados com os testes que fiz no Oracle e deixei a seção de execução do sistema para a Laysa completar com os menus.
 
-## Desenvolvimento das classes Aluno e Treino
+## Prompt 4 — Desenvolvimento das classes Aluno e Treino
 
 **Prompt utilizado:**
 
@@ -77,7 +77,7 @@ A resposta foi utilizada como apoio para implementar as classes Aluno e Treino, 
 
 As classes foram testadas na máquina virtual Linux utilizando Python 3, verificando a criação de objetos, a exibição dos atributos e o relacionamento entre Aluno, Treino e um instrutor temporário.
 
-## Prompt 4 — Implementação e execução do sistema em Python (Laysa)
+## Prompt 5 — Implementação e execução do sistema em Python (Laysa)
 
 "Estou desenvolvendo, junto com meu grupo, um sistema de gerenciamento de academia para a disciplina de Banco de Dados, utilizando Python e Oracle. O projeto possui funcionalidades de gerenciamento de alunos, instrutores, treinos e frequências, além de relatórios. Preciso de ajuda para entender a estrutura do código, implementar e organizar o menu principal e os menus de cada funcionalidade, integrar as operações com o banco de dados Oracle e verificar a execução do sistema. Também preciso de orientação para testar as opções de cadastro, consulta, atualização, exclusão e relatórios, garantindo que a navegação entre os menus funcione corretamente."
 
