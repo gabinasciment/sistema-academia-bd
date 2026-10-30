@@ -128,10 +128,11 @@ sistema-academia-bd/
 │   ├── create_tables_and_records.py
 │   ├── principal.py
 │   └── requirements.txt
+├── PROMPTS.md
 └── README.md
 ```
 
-**Observação:** a estrutura acima representa os principais arquivos utilizados pela aplicação. Outros arquivos SQL e auxiliares podem existir no repositório.
+**Observação:** a estrutura apresenta os principais arquivos utilizados pela aplicação. Outros arquivos SQL e auxiliares podem existir no repositório.
 
 ## Banco de dados
 
@@ -146,7 +147,7 @@ As principais entidades são:
 
 As tabelas utilizam chaves primárias e relacionamentos por chaves estrangeiras para manter a integridade dos dados. O projeto também utiliza sequências para gerar identificadores.
 
-### Configuração da conexão
+## Configuração da conexão
 
 A conexão com o banco de dados é configurada em:
 
@@ -158,9 +159,16 @@ O arquivo de autenticação está localizado em:
 
 O arquivo de autenticação deve conter as credenciais no formato esperado pela aplicação, sem que senhas reais sejam publicadas no GitHub.
 
-A configuração da conexão deve corresponder ao ambiente Oracle utilizado pelo grupo, incluindo o endereço IP do servidor, a porta e o serviço do banco de dados.
+A configuração da conexão deve corresponder ao ambiente Oracle utilizado pelo grupo, incluindo:
 
-**Importante:** o endereço IP pode variar de acordo com a rede utilizada. Caso a aplicação não consiga se conectar, confira o endereço configurado e se o banco Oracle está em execução e acessível.
+- Endereço IP ou nome do servidor.
+- Porta de conexão.
+- Serviço ou identificador do banco de dados.
+- Usuário e senha válidos.
+
+O endereço do servidor pode variar conforme a rede e o ambiente disponibilizado pelo professor. Caso a aplicação não consiga se conectar, confira as configurações e verifique se o banco Oracle está em execução e acessível.
+
+**Importante:** não publique senhas reais ou outras credenciais de acesso no repositório.
 
 ## Requisitos
 
@@ -173,45 +181,77 @@ Antes de executar o projeto, instale ou configure:
 
 A versão Python 3.10 é utilizada neste projeto por compatibilidade com a versão do `cx_Oracle` especificada nos requisitos.
 
+Para a execução no ambiente acadêmico, utilize a máquina virtual Linux conforme as orientações do professor. Verifique se o Python, o Oracle Instant Client e as dependências estão instalados e se o banco de dados Oracle está acessível.
+
 ## Instalação e execução
 
 ### 1. Clonar o repositório
 
 No terminal, execute:
 
-```bash
 git clone https://github.com/gabinasciment/sistema-academia-bd.git
 cd sistema-academia-bd
-```
 
 ### 2. Instalar as dependências
 
 Na pasta raiz do projeto, execute:
 
-```bash
+**Windows:**
+
+```powershell
 py -3.10 -m pip install -r src/requirements.txt
 ```
 
-Se o comando `py -3.10` não estiver disponível, verifique se o Python 3.10 está instalado e registrado no inicializador do Python para Windows.
+**Linux:**
+
+```bash
+python3 -m pip install -r src/requirements.txt
+```
+
+Se o comando `py -3.10` não estiver disponível no Windows, verifique se o Python 3.10 está instalado e registrado no inicializador do Python.
 
 ### 3. Configurar o Oracle Instant Client
 
-No Windows, adicione a pasta do Oracle Instant Client ao `PATH`.
+O Oracle Instant Client deve estar instalado e configurado no ambiente em que a aplicação será executada.
 
-Por exemplo, se o Instant Client estiver instalado no caminho utilizado durante o desenvolvimento:
+**Windows:**
+
+Adicione a pasta do Oracle Instant Client ao `PATH`.
+
+Exemplo de configuração no terminal PowerShell:
 
 ```powershell
-$env:PATH = "C:\Users\Layssa\Documents\oracle\instantclient_23_26;$env:PATH"
+$env:PATH = "C:\caminho\para\instantclient;$env:PATH"
 ```
 
-**Atenção:** esse caminho é específico do ambiente de desenvolvimento. Se o projeto for executado em outro computador, substitua-o pelo caminho correto da instalação local.
+O caminho deve ser substituído pelo local em que o Instant Client está instalado no computador.
 
-O comando acima configura o `PATH` somente para o terminal atual. Se abrir outro terminal, será necessário configurar novamente ou ajustar as variáveis de ambiente do Windows de forma permanente.
+O comando configura o `PATH` somente para o terminal atual. Ao abrir outro terminal, será necessário configurar novamente ou ajustar as variáveis de ambiente do Windows de forma permanente.
+
+**Linux:**
+
+Configure a variável `LD_LIBRARY_PATH` com o caminho da pasta do Oracle Instant Client, conforme o local em que ele foi instalado.
+
+Exemplo:
+
+```bash
+export LD_LIBRARY_PATH=/caminho/para/instantclient:$LD_LIBRARY_PATH
+```
+
+Substitua o caminho pelo diretório correto da instalação.
 
 Para verificar se o `cx_Oracle` consegue carregar o cliente Oracle, execute:
 
+**Windows:**
+
 ```powershell
 py -3.10 -c "import cx_Oracle; print(cx_Oracle.clientversion())"
+```
+
+**Linux:**
+
+```bash
+python3 -c "import cx_Oracle; print(cx_Oracle.clientversion())"
 ```
 
 Se a configuração estiver correta, o comando exibirá a versão do cliente Oracle.
@@ -224,10 +264,9 @@ Antes de executar a aplicação, confirme que:
 
 - O banco Oracle está em execução.
 - O computador consegue alcançar o servidor do banco.
-- O endereço IP, a porta e o serviço estão corretos.
+- O endereço IP ou nome do servidor está correto.
+- A porta e o serviço estão corretos.
 - As credenciais configuradas são válidas.
-
-Não publique senhas ou outras credenciais de acesso no repositório.
 
 ### 5. Executar o sistema
 
@@ -239,8 +278,16 @@ cd src
 
 Execute a aplicação:
 
-```bash
+**Windows:**
+
+```powershell
 py -3.10 principal.py
+```
+
+**Linux:**
+
+```bash
+python3 principal.py
 ```
 
 A aplicação exibirá a tela inicial e, em seguida, o menu principal. Utilize os números apresentados para navegar pelas funcionalidades.
@@ -255,8 +302,16 @@ Esse arquivo é responsável pela criação das estruturas do banco e pela inser
 
 Para executá-lo, entre na pasta `src` e utilize:
 
-```bash
+**Windows:**
+
+```powershell
 py -3.10 create_tables_and_records.py
+```
+
+**Linux:**
+
+```bash
+python3 create_tables_and_records.py
 ```
 
 **Atenção:** execute esse script somente quando necessário e depois de conferir seu conteúdo. Ele pode remover e recriar objetos do banco de dados, apagando registros existentes. Não o execute novamente em um banco com dados que deseja preservar sem antes verificar os comandos utilizados.
@@ -269,11 +324,27 @@ py -3.10 create_tables_and_records.py
 - A exclusão de registros relacionados a outros dados pode ser bloqueada pelas restrições de chaves estrangeiras.
 - Mensagens indicando que tabelas ou sequências não existem podem aparecer na primeira execução do script de criação quando ele tenta remover objetos ainda não criados. Confira o resultado final da execução antes de concluir que houve falha.
 
+## Uso de inteligência artificial
+
+As ferramentas de inteligência artificial utilizadas como apoio ao desenvolvimento do projeto estão documentadas no arquivo `PROMPTS.md`, que apresenta os prompts utilizados, os resultados obtidos e as atividades realizadas pelo grupo a partir das respostas.
+
+## Demonstração do sistema
+
+Vídeo de apresentação e demonstração das funcionalidades:
+
+[Assistir à demonstração no YouTube](INSERIR_LINK_DO_VIDEO)
+
 ## Autores
 
-Projeto desenvolvido em grupo como atividade acadêmica de banco de dados, com integração entre Python e Oracle Database.
+Projeto desenvolvido em grupo como atividade acadêmica da disciplina de Banco de Dados.
 
-Consulte o histórico de contribuições do repositório para identificar as alterações realizadas por cada integrante.
+Integrantes:
+- Esther Bagatelli
+- Érika Pimenta
+- Gabriela Nascimento
+- Laysa Costa
+- Lara Marchesi
+- Caio Ferrari
 
 ## Repositório
 

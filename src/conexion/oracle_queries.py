@@ -33,7 +33,7 @@ class OracleQueries:
 
     def __init__(self, can_write: bool = False):
         self.can_write = can_write
-        self.host = "192.168.1.4"
+        self.host = "localhost"
         self.port = 1521
         self.service_name = "XEPDB1"
         self.sid = "XE"
