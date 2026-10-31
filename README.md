@@ -319,7 +319,7 @@ As ferramentas de inteligência artificial utilizadas como apoio ao desenvolvime
 
 Vídeo de apresentação e demonstração das funcionalidades:
 
-[Assistir à demonstração no YouTube](INSERIR_LINK_DO_VIDEO)
+[Assistir à demonstração no YouTube] (https://youtu.be/IGU7rv3a0Eo)
 
 ## Autores
 
