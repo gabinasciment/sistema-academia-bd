@@ -319,19 +319,19 @@ As ferramentas de inteligência artificial utilizadas como apoio ao desenvolvime
 
 Vídeo de apresentação e demonstração das funcionalidades:
 
-[Assistir à demonstração no YouTube] (https://youtu.be/IGU7rv3a0Eo)
+[Assistir à demonstração no YouTube](https://youtu.be/IGU7rv3a0Eo)
 
 ## Autores
 
 Projeto desenvolvido em grupo como atividade acadêmica da disciplina de Banco de Dados.
 
 Integrantes:
-- Esther Bagatelli
+- Caio Vitor Ferrari
 - Érika Pimenta
-- Gabriela Nascimento
-- Laysa Costa
-- Lara Marchesi
-- Caio Ferrari
+- Esther Bagatelli
+- Gabriela de Oliveira Nascimento
+- Lara Marchesi Goltara
+- Laysa da Costa Colli
 
 ## Repositório
 
